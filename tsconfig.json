@@ -1,0 +1,15 @@
+{
+    "compilerOptions": {
+        "target": "es2017",
+        "removeComments": true,
+        "outDir": "src/js",
+        "sourceMap": true,
+    },
+    "files":[
+        "src/ts/graphBase.ts",
+        "src/ts/index.ts"
+    ],
+    "exclude": [
+        "src/"
+    ]
+}
