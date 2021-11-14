@@ -1,21 +1,21 @@
 <!DOCTYPE html>
 <html>
-<head>
+  <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Editor</title>
+    <title>PGraph editor</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
-</head>
+  </head>
 <body>
+    <h1 id="name"></h1>
     <div class="container">
         <div id="controlPanel"></div>
-        <div id="canvas"></div>
+        <div id="viewport"></div>
     </div>
-    <h1>TEST</h1>
     <footer>
-        <script src='js/lib/d3.v3.min.js'></script>
-        <script type="module" src='js/index.js'></script>
+      <script type="module" src='js/index.js'></script>
+      <script type="module" src='../node_modules/d3/dist/d3.min.js'></script>
     </footer>
-</body>
+  </body>
 </html>

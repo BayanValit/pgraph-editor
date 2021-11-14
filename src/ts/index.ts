@@ -1,21 +1,12 @@
-import { graphBase } from './graphBase.js';
+import { JsonConfig } from './JsonConfig.js';
+import { GraphRender } from './GraphRender.js';
 
 window.onload = function () {
-    init().then(response => {
-        const base = new graphBase(response);
-        // base.getRequired();
-        console.log('1');
-
-    });
+    init().then(() => GraphRender.renderObjects());
 };
 
 function init() {
-    let line = '0';
-    return fetch('../src/data.json').then(response => response.json()).then(
-        jsonResponse => {
-            let matrixFP = jsonResponse['nets'][line]['matrixFP'];
-            let matrixFT = jsonResponse['nets'][line]['matrixFT'];
-            let markup   = jsonResponse['nets'][line]['markup'];
-            return {'FP': matrixFP, 'FT': matrixFT, 'markup': markup};
-    });
+    return fetch('../src/examples/data.example.json').then(response => response.json()).then(
+        json => JsonConfig.init(json)
+    );
 }
