@@ -6,9 +6,5 @@
         "allowUmdGlobalAccess": true,
         "moduleResolution": "node",
         "module": "ES6"
-    },
-    "files":[
-        "src/ts/JsonConfig.ts",
-        "src/ts/index.ts"
-    ]
+    }
 }

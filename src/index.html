@@ -8,10 +8,17 @@
     <link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
   </head>
 <body>
-    <h1 id="name"></h1>
+    <h3 id="name"></h3>
     <div class="container">
         <div id="controlPanel"></div>
         <div id="viewport"></div>
+        <div id="debugPanel">
+          <div>
+            <label>Debug config:</label>
+            <button data-tooltip='Use "ctrl + enter"'>Import & redraw ↻</button>
+          </div>
+          <textarea id="configEditor"></textarea>
+        </div>
     </div>
     <footer>
       <script type="module" src='js/index.js'></script>

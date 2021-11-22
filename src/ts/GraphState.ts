@@ -1,7 +1,7 @@
-import { JsonConfig } from './JsonConfig.js';
-import { Arc } from './object/Arc.js';
-import { Position } from './object/Position.js';
-import { Transition } from './object/Transition.js';
+import { JsonConfig, ConfigType } from './jsonConfig.js';
+import { Arc } from './object/arc.js';
+import { Position } from './object/position.js';
+import { Transition } from './object/transition.js';
 
 enum GraphType { Position , Transition , Arc }
 
@@ -23,19 +23,22 @@ export class GraphState {
         return GraphState.instance;
     }
 
-    private import() {
+    public import() {
+        this.positions = [];
+        this.transitions = [];
+        this.arcs = [];
         const config: JSON = JsonConfig.get();
         this.name = config['name'] ?? "Default network name";
 
         config['matrices']['FP'].forEach((_array, key: number) => {
-            const options = config['positions'][key];
-            const positionPoint = options ? options['position'] : this.getDefaultPosition(GraphType.Position, key);
-            this.positions.push(new Position(positionPoint, config['markup'][key] ?? 1));
+            const options = config['positions'][key] ?? [];
+            const positionPoint = options['position'] ? options['position'] : this.getDefaultPosition(GraphType.Position, key);
+            this.positions.push(new Position(positionPoint, config['markup'][key] ?? 0));
         });
         config['matrices']['FT'].forEach((_array, key: number) => {
-            const options = config['transitions'][key];
-            const positionPoint = options ? options['position'] : this.getDefaultPosition(GraphType.Transition, key);
-            this.transitions.push(new Transition(positionPoint, options ? options['size'] : {width: 120, height: 40}));
+            const options = config['transitions'][key] ?? [];
+            const positionPoint = options['position'] ? options['position'] : this.getDefaultPosition(GraphType.Transition, key);
+            this.transitions.push(new Transition(positionPoint, options['rotate'] ? options['rotate'] : 0));
         });
         config['matrices']['FP'].forEach((array, row: number) => {
             array.forEach((element, col: number) => {
@@ -45,7 +48,8 @@ export class GraphState {
                     const arc = new Arc(
                         this.positions[row],
                         this.transitions[col],
-                        options ? options['is_inhibitory'] : false,
+                        config['type'] == ConfigType.Inhibitory ? Boolean(config['matrices']['FI'][row][col]) : false,
+                        element,
                         options ? options['anchors'] : []
                     );
                     this.positions[row].bindingTo.push(arc);
@@ -61,7 +65,8 @@ export class GraphState {
                     const arc = new Arc(
                         this.positions[row],
                         this.transitions[col],
-                        options ? options['is_inhibitory'] : false,
+                        false,
+                        element,
                         options ? options['anchors'] : []
                     );
                     this.transitions[row].bindingTo.push(arc);
@@ -70,12 +75,14 @@ export class GraphState {
                 }
             });
         });
+        console.log('Import completed successfully');
         return this;
     }
 
     // TODO: public export() - export state to JSONConfig
 
     protected getDefaultPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
+        // TODO: add delta constants, finish the algorithm
         if (graphType == GraphType.Position || graphType == GraphType.Transition) {
             const deltaX = objectNumber * 160;
             const deltaY = graphType == GraphType.Transition ? 180 : objectNumber % 2 * 360;

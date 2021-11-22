@@ -6,51 +6,54 @@ svg {
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
+
+  &:not {
+    cursor: crosshair;
+    path.link {
+      cursor: pointer;
+    }
+  }
 }
 
-svg:not(.active):not(.ctrl) {
-  cursor: crosshair;
+.container {
+  display: flex;
+
+  #debugPanel {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    width: 600px;
+    height: 600px;
+    label {
+      padding: 5px;
+    }
+    button {
+      padding: 5px;
+      background-color: darkorange;
+      color: white;
+    }
+    textarea {
+      flex: auto;
+    }
+  }
 }
 
-path.link {
-  fill: none;
-  stroke: #000;
-  stroke-width: 4px;
-  cursor: default;
-}
-
-svg:not(.active):not(.ctrl) path.link {
-  cursor: pointer;
-}
-
-path.link.selected {
-  stroke-dasharray: 10,2;
-}
-
-path.link.dragline {
-  pointer-events: none;
-}
-
-path.link.hidden {
-  stroke-width: 0;
-}
-
-circle.node {
-  stroke-width: 1.5px;
-  cursor: pointer;
-}
-
-circle.node.reflexive {
-  stroke: #000 !important;
-  stroke-width: 2.5px;
-}
-
-text {
-  font: 12px sans-serif;
-  pointer-events: none;
-}
-
-text.id {
-  text-anchor: middle;
-  font-weight: bold;
+[data-tooltip] {
+  position: relative;          
+  &:after {
+    position: absolute;
+    content: attr(data-tooltip);
+    opacity: 0;
+    top: -25px;
+    left: -5px;
+  }
+  &:hover:after {
+    width: 120px;
+    display: block;
+    opacity: 1;
+    color: darkgray;
+    padding: 4px;
+    background-color: #e6e6e696;
+    border-radius: 5px;
+  }
 }
