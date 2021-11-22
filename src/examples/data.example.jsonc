@@ -20,12 +20,30 @@
     ]
   },
   "markup": [3, 2, 2, 1],
-  "type": "default",
+  "type": "inhibitory",
   "positions": [
     {
       "position": {
         "X": 100,
         "Y": 100
+      }
+    },
+    {
+      "position": {
+        "X": 260,
+        "Y": 460
+      }
+    },
+    {
+      "position": {
+        "X": 420,
+        "Y": 100
+      }
+    },
+    {
+      "position": {
+        "X": 580,
+        "Y": 460
       }
     }
   ],
@@ -36,10 +54,25 @@
         "Y": 280
       },
       "rotate": 0
+    },
+    {
+      "position": {
+        "X": 260,
+        "Y": 280
+      },
+      "rotate": 0
+    },
+    {
+      "position": {
+        "X": 420,
+        "Y": 280
+      },
+      "rotate": 0
     }
   ],
-  "arcs": {
-    "P1-T2": {
+  "arcs": [
+    {
+      "binding": "P1-T2",
       "anchors": [
         {
           "X": 150,
@@ -47,13 +80,32 @@
         }
       ]
     },
-    "T1-P2": {
+    {
+      "binding": "P2-T3"
+    },
+    {
+      "binding": "P3-T3"
+    },
+    {
+      "binding": "P4-T1"
+    },
+    {
+      "binding": "T1-P2",
       "anchors": [
         {
           "X": 250,
           "Y": 120
         }
       ]
+    },
+    {
+      "binding": "T1-P3"
+    },
+    {
+      "binding": "T2-P3"
+    },
+    {
+      "binding": "T3-P4"
     }
-  }
+  ]
 }

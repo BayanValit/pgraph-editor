@@ -29,13 +29,30 @@ svg {
     }
     button {
       padding: 5px;
-      background-color: darkorange;
       color: white;
+      border-radius: 5px;
+      &:hover {
+        cursor: pointer;
+      }
     }
     textarea {
       flex: auto;
     }
   }
+
+  #importButton {
+    background-color: darkorange;
+    width: 150px;
+  }
+  #exportButton {
+    background-color: green;
+  }
+}
+
+.symbol-export {
+  background: darkslategrey;
+  padding: 0 2px;
+  border: solid black 1px;
 }
 
 [data-tooltip] {
@@ -45,10 +62,10 @@ svg {
     content: attr(data-tooltip);
     opacity: 0;
     top: -25px;
-    left: -5px;
+    left: 0px;
+    right: 0px;
   }
   &:hover:after {
-    width: 120px;
     display: block;
     opacity: 1;
     color: darkgray;

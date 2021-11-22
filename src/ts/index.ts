@@ -9,13 +9,14 @@ window.onload = function () {
 };
 
 function init() {
+    // TODO: Drop to default path, add custom
     return fetch('../src/examples/data.example.jsonc').then(function(response) {
         return response.text().then(
             (config) => {
                 d3.select("#configEditor").html(config);
                 JsonConfig.init(JSON.parse(config));
             }
-        );
+        ).then(() => GraphState.getInstance().import());
     })
 }
 
@@ -26,8 +27,13 @@ function importAndRedraw() {
     GraphRender.renderObjects();
 }
 
+function exportConfig() {
+    GraphState.getInstance().export();
+}
+
 function initMouseEvents() {
-    d3.select("#debugPanel button").on("click", importAndRedraw);
+    d3.select("#importButton").on("click", importAndRedraw);
+    d3.select("#exportButton").on("click", exportConfig);
 }
 
 function initKeyboardEvents() {

@@ -3,7 +3,7 @@ import { default as Constants } from './constants.js';
 
 export class GraphRender {
     public static renderObjects() {
-        const { ...defaults } = { ...Constants.defaultSize };
+        const { ...defaults } = { ...Constants.defaultSizes };
         d3.select("#viewport").selectAll("*").remove();
 
         const state = GraphState.getInstance();

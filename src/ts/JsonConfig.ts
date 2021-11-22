@@ -18,7 +18,6 @@ export class JsonConfig {
     }
 
     protected static autofix() {
-        this.json['name'] ??= "Default network name";
         this.json['type'] ??= ConfigType.Default;
 
         if (this.json['type'] == ConfigType.Inhibitory) {

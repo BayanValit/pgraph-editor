@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "lib": ["DOM", "ES2021"],
         "target": "ES2017",
         "removeComments": true,
         "sourceMap": true,
