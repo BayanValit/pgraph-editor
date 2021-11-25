@@ -56,8 +56,8 @@ export class GraphState {
                         element,
                         options ? options['anchors'] : []
                     );
-                    this.positions[row].bindingTo.push(arc);
-                    this.transitions[col].bindingFrom.push(arc);
+                    this.positions[row].target.push(arc);
+                    this.transitions[col].source.push(arc);
                     this.arcs.push(arc);
                 }
             });
@@ -74,8 +74,8 @@ export class GraphState {
                         element,
                         options ? options['anchors'] : []
                     );
-                    this.transitions[row].bindingTo.push(arc);
-                    this.positions[col].bindingFrom.push(arc);
+                    this.transitions[row].target.push(arc);
+                    this.positions[col].source.push(arc);
                     this.arcs.push(arc);
                 }
             });
@@ -106,8 +106,8 @@ export class GraphState {
         const arcs = [];
         
         this.positions.forEach((position, row) => {
-            position.bindingTo.forEach(arc => {
-                const col = this.transitions.indexOf(arc.bindingTo as Transition);
+            position.target.forEach(arc => {
+                const col = this.transitions.indexOf(arc.target as Transition);
                 if (col >= 0) {
                     FP[row][col] = arc.multiplicity;
                     FI[row][col] = Number(arc.has_inhibitory);
@@ -118,8 +118,8 @@ export class GraphState {
         });
 
         this.transitions.forEach((transition, row) => {
-            transition.bindingTo.forEach(arc => {
-                const col = this.positions.indexOf(arc.bindingTo as Position);
+            transition.target.forEach(arc => {
+                const col = this.positions.indexOf(arc.target as Position);
                 if (col >= 0) {
                     FT[row][col] = arc.multiplicity;
                 }
@@ -128,8 +128,8 @@ export class GraphState {
         });
 
         this.arcs.forEach(arc => {
-            const from = this.getIndexAndType(arc.bindingFrom);
-            const to = this.getIndexAndType(arc.bindingTo);
+            const from = this.getIndexAndType(arc.source);
+            const to = this.getIndexAndType(arc.target);
             const binding = from.type + (from.index + 1) + '-' + to.type + (to.index + 1);
             arcs.push({ binding, anchors: arc.anchors });
         });
@@ -153,28 +153,7 @@ export class GraphState {
         return JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
-    /**
-     * Correction of ugly output of numeric arrays via JSON.stringify
-     * @param match // multi-line for formatting
-     * @return string
-     */
-    protected formatReplacer(match: string): string {
-        return match.replace(/\s+/gs, '').replaceAll(',', ', ');
-    }
-
-    protected getIndexAndType(object: Position | Transition | Arc ) {
-        if (object instanceof Position) {
-            return { type: GraphType.Position, index: this.positions.indexOf(object) };
-        }
-        if (object instanceof Transition) {
-            return { type: GraphType.Transition, index: this.transitions.indexOf(object) };
-        }
-        if (object instanceof Arc) {
-            return { type: GraphType.Arc, index: this.arcs.indexOf(object) };
-        }
-    }
-
-    protected getOptimalPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
+    public getOptimalPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
         if (graphType == GraphType.Position || graphType == GraphType.Transition) {
             const { ...defaults } = { ...Constants.defaultPositions };
 
@@ -226,5 +205,26 @@ export class GraphState {
             }
         }
         throw new Error(`Invalid type object: ${graphType}`);
+    }
+
+    /**
+     * Correction of ugly output of numeric arrays via JSON.stringify
+     * @param match // multi-line for formatting
+     * @return string
+     */
+    protected formatReplacer(match: string): string {
+        return match.replace(/\s+/gs, '').replaceAll(',', ', ');
+    }
+
+    protected getIndexAndType(object: Position | Transition | Arc ) {
+        if (object instanceof Position) {
+            return { type: GraphType.Position, index: this.positions.indexOf(object) };
+        }
+        if (object instanceof Transition) {
+            return { type: GraphType.Transition, index: this.transitions.indexOf(object) };
+        }
+        if (object instanceof Arc) {
+            return { type: GraphType.Arc, index: this.arcs.indexOf(object) };
+        }
     }
 }

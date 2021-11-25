@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 - Creating a universal state object to interact with the configuration;
 - Drawing primitive objects by object-state;
 
-## [Unreleased] - 2021-11-XX
+## [0.0.1] - 2021-11-25
 
 ### Modified
 - Configuration files are now in jsonc format - with annotations;
@@ -23,6 +23,6 @@ All notable changes to this project will be documented in this file.
 - Added processing of the inhibitory matrix;
 - Debug mode, which accepts a JSON configuration, with an update function;
 - Export configuration to JSON file;
-
-## [0.0.1](link) - 2021-11-XX
-**Waiting...**
+- An algorithm for optimal determination of the location of objects has been created;
+- Rendering objects via d3.js;
+- Implementation of moving positions and transitions;

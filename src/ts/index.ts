@@ -20,6 +20,26 @@ function init() {
     })
 }
 
+function initMouseEvents() {
+    d3.select("#importButton").on("click", importAndRedraw);
+    d3.select("#exportButton").on("click", exportConfig);
+}
+
+function initKeyboardEvents() {
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && e.key === 'Enter') {
+            e.preventDefault();
+            importAndRedraw();
+            return;
+        }
+        if (e.ctrlKey && e.key === 'e') {
+          e.preventDefault();
+          exportConfig();
+          return;
+        }
+    });
+}
+
 function importAndRedraw() {
     const textConfig = (d3.select("#configEditor").node() as HTMLTextAreaElement).value;
     JsonConfig.init(JSON.parse(textConfig));
@@ -41,20 +61,4 @@ function exportConfig() {
     link.click();
     
     URL.revokeObjectURL(link.href);
-}
-
-function initMouseEvents() {
-    d3.select("#importButton").on("click", importAndRedraw);
-    d3.select("#exportButton").on("click", exportConfig);
-}
-
-function initKeyboardEvents() {
-    // Debug run on ctrl + enter
-    window.onkeydown = function(event) {
-        if (event.ctrlKey && event.keyCode === 13) {
-            event.preventDefault();
-            importAndRedraw();
-            return;
-        }
-    }
 }

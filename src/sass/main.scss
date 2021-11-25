@@ -74,3 +74,24 @@ svg {
     border-radius: 5px;
   }
 }
+
+.node {
+  .position {
+    fill: rgba(44, 170, 228, 0.5);
+  }
+  .transition {
+    fill:rgba(20, 173, 20, 0.5);
+  }
+  .label {
+    text-anchor: middle;
+    font: small-caps bold 20px Tahoma, Geneva, sans-serif;
+    fill: white;
+    stroke: rgba(0, 0, 0, 0.5);
+  }
+}
+
+.arc {
+  stroke: #999;
+  stroke-width: 2px;
+  stroke-opacity: 0.8;
+}

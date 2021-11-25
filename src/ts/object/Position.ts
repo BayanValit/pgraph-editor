@@ -1,14 +1,34 @@
 import { Arc } from './arc.js';
 
-export class Position {
-    public bindingFrom: Array<Arc>;
-    public bindingTo: Array<Arc>;
+export class Position implements d3.SimulationNodeDatum {
+    index?: number | undefined;
+    vx?: number | undefined;
+    vy?: number | undefined;
+    fx?: number | null | undefined;
+    fy?: number | null | undefined;
+    x?: number | undefined;
+    y?: number | undefined;
+
+    public source: Array<Arc>;
+    public target: Array<Arc>;
+    public marks = 0;
 
     constructor(
-        public position: { X: number, Y: number } = undefined,
-        public marks = 0
+        position: { X: number, Y: number } = undefined,
+        marks: number
     ) {
-        this.bindingFrom = [];
-        this.bindingTo = [];
+        this.position = position;
+        this.marks = marks;
+        this.source = [];
+        this.target = [];
+    }
+
+    public set position(point : { X: number, Y: number }) {
+        this.x = point.X;
+        this.y = point.Y;
+    }
+    
+    public get position(): { X: number, Y: number } {
+        return { X: this.x, Y: this.y };
     }
 }
