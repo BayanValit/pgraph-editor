@@ -6,51 +6,92 @@ svg {
   -ms-user-select: none;
   -o-user-select: none;
   user-select: none;
+
+  &:not {
+    cursor: crosshair;
+    path.link {
+      cursor: pointer;
+    }
+  }
 }
 
-svg:not(.active):not(.ctrl) {
-  cursor: crosshair;
+.container {
+  display: flex;
+
+  #debugPanel {
+    display: flex;
+    flex: auto;
+    flex-direction: column;
+    width: 600px;
+    height: 600px;
+    label {
+      padding: 5px;
+    }
+    button {
+      padding: 5px;
+      width: 150px;
+      color: white;
+      border-radius: 5px;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    textarea {
+      flex: auto;
+    }
+  }
+
+  #importButton {
+    background-color: darkorange;
+  }
+  #exportButton {
+    background-color: green;
+  }
 }
 
-path.link {
-  fill: none;
-  stroke: #000;
-  stroke-width: 4px;
-  cursor: default;
+.symbol-export {
+  background: darkslategrey;
+  padding: 0 2px;
+  border: solid black 1px;
 }
 
-svg:not(.active):not(.ctrl) path.link {
-  cursor: pointer;
+[data-tooltip] {
+  position: relative;          
+  &:after {
+    position: absolute;
+    content: attr(data-tooltip);
+    opacity: 0;
+    top: -25px;
+    left: 0px;
+    right: 0px;
+  }
+  &:hover:after {
+    display: block;
+    opacity: 1;
+    color: darkgray;
+    padding: 4px;
+    background-color: #e6e6e696;
+    border-radius: 5px;
+  }
 }
 
-path.link.selected {
-  stroke-dasharray: 10,2;
+.node {
+  .position {
+    fill: rgba(44, 170, 228, 0.5);
+  }
+  .transition {
+    fill:rgba(20, 173, 20, 0.5);
+  }
+  .label {
+    text-anchor: middle;
+    font: small-caps bold 20px Tahoma, Geneva, sans-serif;
+    fill: white;
+    stroke: rgba(0, 0, 0, 0.5);
+  }
 }
 
-path.link.dragline {
-  pointer-events: none;
-}
-
-path.link.hidden {
-  stroke-width: 0;
-}
-
-circle.node {
-  stroke-width: 1.5px;
-  cursor: pointer;
-}
-
-circle.node.reflexive {
-  stroke: #000 !important;
-  stroke-width: 2.5px;
-}
-
-text {
-  font: 12px sans-serif;
-  pointer-events: none;
-}
-
-text.id {
-  text-anchor: middle;
-  font-weight: bold;
+.arc {
+  stroke: #999;
+  stroke-width: 2px;
+  stroke-opacity: 0.8;
 }

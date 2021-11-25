@@ -1,25 +1,16 @@
-import { Position } from './Position.js';
-import { Transition } from './Transition.js';
+import { Position } from './position.js';
+import { Transition } from './transition.js';
 
 export class Arc {
-    public bindingFrom: Position | Transition | undefined;
-    public bindingTo: Position | Transition | undefined;
-    public is_ingibitory: boolean;
-    public anchors: Array<{ X: number, Y: number }>;
-
     constructor(
-        bindingFrom: Position | Transition | undefined,
-        bindingTo: Position | Transition | undefined,
-        is_ingibitory: boolean,
-        anchors: { X: number; Y: number; }[]
-    ) {
-        this.bindingFrom = bindingFrom;
-        this.bindingTo = bindingTo;
-        this.is_ingibitory = is_ingibitory;
-        this.anchors = anchors;
-    }
+        public source: Position | Transition | undefined,
+        public target: Position | Transition | undefined,
+        public has_inhibitory: boolean,
+        public multiplicity: number,
+        public anchors: Array<{ X: number, Y: number }>
+    ) {}
 
     isValid() {
-        return this.bindingFrom && this.bindingTo;
+        return this.source && this.target;
     }
 }

@@ -1,17 +1,12 @@
-// const myEvent = new Event('onGraphChange', {
-//     bubbles: true,
-//     cancelable: true,
-//     composed: false
-// });
-
-enum ConfigType { Default = "default" , Ingibitory = "ingibitory" }
+export enum ConfigType { Default = "default" , Inhibitory = "inhibitory" }
 
 export class JsonConfig {
     private static json: JSON;
 
     public static init(json: JSON) {
-        this.validate(json);
         this.json = json;
+        this.autofix();
+        this.validate();
         return this;
     }
 
@@ -22,33 +17,48 @@ export class JsonConfig {
         return this.json;
     }
 
-    protected static validate(json: JSON) {
-        // TODO: Validate by JSONschema
-        const rowsFP = json['matrices']['FP'].length;
-        const rowsFT = json['matrices']['FT'].length;
+    protected static autofix() {
+        this.json['type'] ??= ConfigType.Default;
 
-        if (!Object.values(ConfigType).includes(json['type'] ?? ConfigType.Default)) {
-            throw new Error("Invalid type net: " + json['type']);
+        if (this.json['type'] == ConfigType.Inhibitory) {
+            this.json['matrices']['FI'] ??= Array.from(this.json['matrices']['FP'] as Array<number[]>, x => x.fill(0));
         }
 
-        if (json['type'] == ConfigType.Ingibitory && !json['matrices']['FI']) {
-            throw new Error("Invalid format of matrices");
+        if (!Array.isArray(this.json['markup'])) {
+            this.json['markup'] = [];
+        }
+    }
+
+    protected static validate() {
+        const rowsFP = this.json['matrices']['FP'].length;
+        const rowsFT = this.json['matrices']['FT'].length;
+
+        if (!Object.values(ConfigType).includes(this.json['type'] ?? ConfigType.Default)) {
+            throw new Error("Invalid type net: " + this.json['type']);
         }
 
-        json['matrices']['FP'].forEach(element => {
+        this.json['matrices']['FP'].forEach(element => {
             if (element.length != rowsFT) {
                 throw new Error("Invalid format of matrices");
             }
         });
-        json['matrices']['FT'].forEach(element => {
+
+        this.json['matrices']['FT'].forEach(element => {
             if (element.length != rowsFP) {
                 throw new Error("Invalid format of matrices");
             }
         });
 
-        // Drop in Autofix function:
-        if (!Array.isArray(json['markup'])) {
-            json['markup'] = [];
+        if (this.json['type'] == ConfigType.Inhibitory) {
+
+            this.json['matrices']['FI'].forEach(element => {
+                if (element.length != rowsFT) {
+                    throw new Error("Invalid format of inhibitory matrix");
+                }
+            });
+            if (this.json['matrices']['FI'].length != rowsFP) {
+                throw new Error("Invalid format of inhibitory matrix");
+            }
         }
     }
 }

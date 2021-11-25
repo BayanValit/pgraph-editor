@@ -1,0 +1,7 @@
+// Minimum allowable configuration
+{
+  "matrices": {
+    "FP": [],
+    "FT": []
+  }
+}
