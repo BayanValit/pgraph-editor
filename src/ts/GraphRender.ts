@@ -18,7 +18,7 @@ export class GraphRender {
             view.append("circle") 
                 .attr("cx", object.position.X)
                 .attr("cy", object.position.Y)
-                .attr("r", defaults.circleRadius);
+                .attr("r", defaults.positionRadius);
         });
 
         state.transitions.forEach(object => {

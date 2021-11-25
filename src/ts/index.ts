@@ -28,7 +28,19 @@ function importAndRedraw() {
 }
 
 function exportConfig() {
-    GraphState.getInstance().export();
+    const configJson = GraphState.getInstance().export();
+    (d3.select("#configEditor").node() as HTMLTextAreaElement).value = configJson;
+
+    const link = document.createElement('a');
+    const file = new File([configJson], GraphState.getInstance().name + ".json", {
+        type: "application/json",
+    });
+
+    link.download = file.name;
+    link.href = URL.createObjectURL(file);
+    link.click();
+    
+    URL.revokeObjectURL(link.href);
 }
 
 function initMouseEvents() {

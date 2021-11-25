@@ -5,7 +5,7 @@ export class Transition {
     public bindingTo: Array<Arc>;
 
     constructor(
-        public position: { X: number, Y: number } = { X: 0, Y: 0 },
+        public position: { X: number, Y: number } = undefined,
         public rotate = 0
     ) {
         this.bindingFrom = [];

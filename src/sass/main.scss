@@ -29,6 +29,7 @@ svg {
     }
     button {
       padding: 5px;
+      width: 150px;
       color: white;
       border-radius: 5px;
       &:hover {
@@ -42,7 +43,6 @@ svg {
 
   #importButton {
     background-color: darkorange;
-    width: 150px;
   }
   #exportButton {
     background-color: green;

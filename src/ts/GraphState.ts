@@ -37,13 +37,11 @@ export class GraphState {
 
         config['matrices']['FP'].forEach((_array, key: number) => {
             const options = config['positions'] ? config['positions'][key] ?? [] : [];
-            const positionPoint = options['position'] ? options['position'] : this.getDefaultPosition(GraphType.Position, key);
-            this.positions.push(new Position(positionPoint, config['markup'][key] ?? 0));
+            this.positions.push(new Position(options['position'], config['markup'][key] ?? 0));
         });
         config['matrices']['FT'].forEach((_array, key: number) => {
             const options = config['transitions'] ? config['transitions'][key] ?? [] : [];
-            const positionPoint = options['position'] ? options['position'] : this.getDefaultPosition(GraphType.Transition, key);
-            this.transitions.push(new Transition(positionPoint, options['rotate'] ? options['rotate'] : 0));
+            this.transitions.push(new Transition(options['position'], options['rotate'] ? options['rotate'] : 0));
         });
         config['matrices']['FP'].forEach((array, row: number) => {
             array.forEach((element, col: number) => {
@@ -81,6 +79,15 @@ export class GraphState {
                     this.arcs.push(arc);
                 }
             });
+        });
+
+        [...Array(Math.max(this.positions.length, this.transitions.length)).keys()].forEach((index) => {
+            if (this.positions[index] instanceof Position && this.positions[index]?.position === undefined) {
+                this.positions[index].position = this.getOptimalPosition(GraphType.Position, index);
+            }
+            if (this.transitions[index] instanceof Transition && this.transitions[index]?.position === undefined) {
+                this.transitions[index].position = this.getOptimalPosition(GraphType.Transition, index);
+            }
         });
         console.log('Import completed successfully');
         return this;
@@ -143,17 +150,7 @@ export class GraphState {
             arcs
         }
         
-        const json = JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
-        const link = document.createElement('a');
-        const file = new File([json], this.name + ".json", {
-            type: "application/json",
-        });
-
-        link.download = file.name;
-        link.href = URL.createObjectURL(file);
-        link.click();
-        
-        URL.revokeObjectURL(link.href);
+        return JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
     /**
@@ -177,13 +174,57 @@ export class GraphState {
         }
     }
 
-    protected getDefaultPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
-        // TODO: add delta constants, finish the algorithm
+    protected getOptimalPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
         if (graphType == GraphType.Position || graphType == GraphType.Transition) {
-            const deltaX = objectNumber * 160;
-            const deltaY = graphType == GraphType.Transition ? 180 : objectNumber % 2 * 360;
-            return { X: 100 + deltaX, Y: 100 + deltaY};
+            const { ...defaults } = { ...Constants.defaultPositions };
+
+            // Indentation for the first position...
+            const pX0 = defaults.PaddingLeft;
+            const pY0 = defaults.PaddingTop;
+
+            // ...and for the first transition
+            const tX0 = pX0;
+            const tY0 = pY0 + defaults.intervalY;
+
+            // Intervals between objects
+            let deltaX = defaults.intervalX;
+            let deltaY = defaults.intervalY;
+            
+            deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
+
+            // Extreme points: The maximum right or top values are among all previous objects
+            let extPX = 0, extTX = 0, extPY = 0, extTY = 0;
+
+            if (objectNumber) {
+                extPX = Math.max(...this.positions.slice(0, objectNumber).map(p => p.position?.X ?? 0));
+                extTX = Math.max(...this.transitions.slice(0, objectNumber).map(t => t.position?.X ?? 0));
+                extPY = Math.min(...this.positions.slice(0, objectNumber).map(p => p.position?.Y ?? Infinity));
+                extTY = Math.min(...this.transitions.slice(0, objectNumber).map(t => t.position?.Y ?? Infinity));
+            } else {
+                deltaX = 0;  // If first
+            }
+            switch (graphType) {
+                case GraphType.Position: {
+                    // Critical points: The value of the alternative object of the current index;
+                    const critX = this.transitions[objectNumber]?.position?.X ?? 0;
+                    const critY = this.transitions[objectNumber]?.position?.Y ?? 0;
+
+                    const X = Math.max(extPX + deltaX, pX0 + deltaX, extTX + deltaX, critX);
+                    const Y = Math.max(extPY - pY0 + tY0 + deltaY, Math.max(extTY, tY0) + deltaY, objectNumber % 2 ? critY + deltaY : 0, pY0);
+
+                    return { X, Y };
+                }
+                case GraphType.Transition: {
+                    const critX = this.positions[objectNumber]?.position?.X ?? 0;
+                    const critY = this.positions[objectNumber]?.position?.Y ?? 0;
+                    
+                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX); 
+                    const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
+
+                    return { X, Y };
+                }
+            }
         }
-        throw new Error("Invalid type object");
+        throw new Error(`Invalid type object: ${graphType}`);
     }
 }
