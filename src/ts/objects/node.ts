@@ -1,6 +1,9 @@
+import { ObjectInterface } from './object.js';
 import { Arc } from './arc.js';
+import { Position } from './position.js';
+import { Transition } from './transition.js';
 
-export class Transition implements d3.SimulationNodeDatum {
+export class Node implements d3.SimulationNodeDatum, ObjectInterface {
     index?: number | undefined;
     vx?: number | undefined;
     vy?: number | undefined;
@@ -11,15 +14,14 @@ export class Transition implements d3.SimulationNodeDatum {
 
     public source: Array<Arc>;
     public target: Array<Arc>;
-    public rotate = 0;
+    public type: typeof Position | typeof Transition;
 
     constructor(
         position: { X: number, Y: number } = undefined,
-        rotate: number
+        type: typeof Position | typeof Transition = undefined
     ) {
-        this.x = position?.X;
-        this.y = position?.Y;
-        this.rotate = rotate;
+        this.position = position;
+        this.type = type;
         this.source = [];
         this.target = [];
     }

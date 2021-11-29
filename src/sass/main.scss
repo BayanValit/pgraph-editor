@@ -1,3 +1,48 @@
+// TODO: Split into files, add imports
+
+/**
+ * Variables
+ */
+$arc-color: #C9DAE7;
+
+/**
+ * Fonts
+ */
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_DemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Bold.ttf") format("truetype");
+}
+
+/**
+ * Styles
+ */
 svg {
   background-color: azure;
   cursor: default;
@@ -15,37 +60,51 @@ svg {
   }
 }
 
+#name {
+  font: normal 600 larger "Golos";
+}
+
 .container {
   display: flex;
 
   #debugPanel {
-    display: flex;
+    display: none;
     flex: auto;
     flex-direction: column;
     width: 600px;
     height: 600px;
-    label {
-      padding: 5px;
-    }
-    button {
-      padding: 5px;
-      width: 150px;
-      color: white;
-      border-radius: 5px;
-      &:hover {
-        cursor: pointer;
+
+    .debugMenu {
+      font: normal 400 medium "Golos";
+
+      button {
+        padding: 5px;
+        width: 150px;
+        color: white;
+        border-radius: 5px;
+        font: inherit;
+        font-size: 0.8em;
+        &:hover {
+          cursor: pointer;
+        }
+        &#importButton {
+          background-color: darkorange;
+        }
+        &#exportButton {
+          background-color: green;
+        }
+      }
+      label {
+        padding: 5px;
+        color: black;
+        width: 120px;
+        display: inline-flex;
+        justify-content: center;
       }
     }
-    textarea {
+    #configEditor {
       flex: auto;
     }
-  }
-
-  #importButton {
-    background-color: darkorange;
-  }
-  #exportButton {
-    background-color: green;
   }
 }
 
@@ -76,6 +135,8 @@ svg {
 }
 
 .node {
+  stroke: $arc-color;
+
   .position {
     fill: rgba(44, 170, 228, 0.5);
   }
@@ -84,14 +145,18 @@ svg {
   }
   .label {
     text-anchor: middle;
-    font: small-caps bold 20px Tahoma, Geneva, sans-serif;
+    font: normal 700 x-large "Golos";
     fill: white;
     stroke: rgba(0, 0, 0, 0.5);
   }
 }
 
-.arc {
-  stroke: #999;
+.arc { 
+  stroke: $arc-color;
   stroke-width: 2px;
   stroke-opacity: 0.8;
+}
+
+.arc-end {
+  fill: $arc-color;
 }

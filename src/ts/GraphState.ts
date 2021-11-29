@@ -1,10 +1,10 @@
 import { JsonConfig, ConfigType } from './jsonConfig.js';
-import { Arc } from './object/arc.js';
-import { Position } from './object/position.js';
-import { Transition } from './object/transition.js';
+import { Arc } from './objects/arc.js';
+import { Position } from './objects/position.js';
+import { Transition } from './objects/transition.js';
 import { default as Constants } from './constants.js';
 
-enum GraphType { Position = 'P' , Transition = 'T' , Arc = 'A' }
+enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
 
 export class GraphState {
     private static instance: GraphState;
@@ -32,29 +32,30 @@ export class GraphState {
 
         const config: JSON = JsonConfig.get();
 
-        this.name = config['name'] ??= Constants.defaultName;
-        this.type = config['type'];
+        this.name = config["name"] ??= Constants.defaultName;
+        this.type = config["type"];
 
-        config['matrices']['FP'].forEach((_array, key: number) => {
-            const options = config['positions'] ? config['positions'][key] ?? [] : [];
-            this.positions.push(new Position(options['position'], config['markup'][key] ?? 0));
+        config["matrices"]["FP"].forEach((_array, key: number) => {
+            const options = config["positions"] ? config["positions"][key] ?? [] : [];
+            this.positions.push(new Position(options["position"], config["markup"][key] ?? 0));
         });
-        config['matrices']['FT'].forEach((_array, key: number) => {
-            const options = config['transitions'] ? config['transitions'][key] ?? [] : [];
-            this.transitions.push(new Transition(options['position'], options['rotate'] ? options['rotate'] : 0));
+        config["matrices"]["FT"].forEach((_array, key: number) => {
+            const options = config["transitions"] ? config["transitions"][key] ?? [] : [];
+            this.transitions.push(new Transition(options["position"], options["rotate"] ? options["rotate"] : 0));
         });
-        config['matrices']['FP'].forEach((array, row: number) => {
+        config["matrices"]["FP"].forEach((array, row: number) => {
             array.forEach((element, col: number) => {
                 if (element) {
-                    const arc_serial = 'P' + (row + 1) + '-T' + (col + 1);
+                    const arc_serial = "P" + (row + 1) + "-T" + (col + 1);
                     
-                    const options = config['arcs'] ? (config['arcs'] as []).find(x => x['binding'] == arc_serial) ?? [] : [];
+                    const options = config["arcs"] ? (config["arcs"] as []).find(x => x["binding"] == arc_serial) ?? [] : [];
                     const arc = new Arc(
+                        arc_serial,
                         this.positions[row],
                         this.transitions[col],
-                        this.type == ConfigType.Inhibitory ? Boolean(config['matrices']['FI'][row][col]) : false,
+                        this.type == ConfigType.Inhibitory ? Boolean(config["matrices"]["FI"][row][col]) : false,
                         element,
-                        options ? options['anchors'] : []
+                        options ? options["anchors"] : []
                     );
                     this.positions[row].target.push(arc);
                     this.transitions[col].source.push(arc);
@@ -62,17 +63,18 @@ export class GraphState {
                 }
             });
         });
-        config['matrices']['FT'].forEach((array, row: number) => {
+        config["matrices"]["FT"].forEach((array, row: number) => {
             array.forEach((element, col: number) => {
                 if (element) {
-                    const arc_serial = 'T' + (row + 1) + '-P' + (col + 1);
-                    const options = config['arcs'] ? (config['arcs'] as []).find(x => x['binding'] == arc_serial) ?? [] : [];
+                    const arc_serial = "T" + (row + 1) + "-P" + (col + 1);
+                    const options = config["arcs"] ? (config["arcs"] as []).find(x => x["binding"] == arc_serial) ?? [] : [];
                     const arc = new Arc(
+                        arc_serial,
                         this.transitions[row],
                         this.positions[col],
                         false,
                         element,
-                        options ? options['anchors'] : []
+                        options ? options["anchors"] : []
                     );
                     this.transitions[row].target.push(arc);
                     this.positions[col].source.push(arc);
@@ -89,7 +91,7 @@ export class GraphState {
                 this.transitions[index].position = this.getOptimalPosition(GraphType.Transition, index);
             }
         });
-        console.log('Import completed successfully');
+        console.log("Import completed successfully");
         return this;
     }
 
@@ -130,7 +132,7 @@ export class GraphState {
         this.arcs.forEach(arc => {
             const from = this.getIndexAndType(arc.source);
             const to = this.getIndexAndType(arc.target);
-            const binding = from.type + (from.index + 1) + '-' + to.type + (to.index + 1);
+            const binding = from.type + (from.index + 1) + "-" + to.type + (to.index + 1);
             arcs.push({ binding, anchors: arc.anchors });
         });
 
@@ -213,7 +215,7 @@ export class GraphState {
      * @return string
      */
     protected formatReplacer(match: string): string {
-        return match.replace(/\s+/gs, '').replaceAll(',', ', ');
+        return match.replace(/\s+/gs, "").replaceAll(",", ", ");
     }
 
     protected getIndexAndType(object: Position | Transition | Arc ) {

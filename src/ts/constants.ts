@@ -1,4 +1,7 @@
 export default class Constants {
+
+    public static debugMode = true;
+
     public static defaultSizes = {
         transitionWidth: 120,
         transitionHeight: 40,
@@ -15,4 +18,5 @@ export default class Constants {
     }
 
     public static defaultName = "Untitled network";
+
 }

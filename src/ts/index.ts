@@ -10,7 +10,7 @@ window.onload = function () {
 
 function init() {
     // TODO: Drop to default path, add custom
-    return fetch('../src/examples/data.example.jsonc').then(function(response) {
+    return fetch("../src/examples/data.example.jsonc").then(function(response) {
         return response.text().then(
             (config) => {
                 d3.select("#configEditor").html(config);
@@ -26,13 +26,13 @@ function initMouseEvents() {
 }
 
 function initKeyboardEvents() {
-    document.addEventListener('keydown', e => {
-        if (e.ctrlKey && e.key === 'Enter') {
+    document.addEventListener("keydown", e => {
+        if (e.ctrlKey && e.key === "Enter") {
             e.preventDefault();
             importAndRedraw();
             return;
         }
-        if (e.ctrlKey && e.key === 'e') {
+        if (e.ctrlKey && e.key === "e") {
           e.preventDefault();
           exportConfig();
           return;
@@ -51,7 +51,7 @@ function exportConfig() {
     const configJson = GraphState.getInstance().export();
     (d3.select("#configEditor").node() as HTMLTextAreaElement).value = configJson;
 
-    const link = document.createElement('a');
+    const link = document.createElement("a");
     const file = new File([configJson], GraphState.getInstance().name + ".json", {
         type: "application/json",
     });
