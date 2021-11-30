@@ -42,6 +42,9 @@ function initKeyboardEvents() {
 
 function importAndRedraw() {
     const textConfig = (d3.select("#configEditor").node() as HTMLTextAreaElement).value;
+    // TODO: Describe the logic of error output in a separate class
+    d3.select('.debugMenu span').html('❌');
+
     JsonConfig.init(JSON.parse(textConfig));
     GraphState.getInstance().import();
     GraphRender.renderObjects();

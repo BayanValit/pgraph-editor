@@ -29,7 +29,7 @@ export class JsonConfig {
         }
     }
 
-    protected static validate() {
+    protected static validate(): void | never {
         const rowsFP = this.json["matrices"]["FP"].length;
         const rowsFT = this.json["matrices"]["FT"].length;
 

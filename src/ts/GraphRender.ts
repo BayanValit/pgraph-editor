@@ -5,7 +5,7 @@ import { Position } from './objects/position.js';
 import { Transition } from './objects/transition.js';
 import { Arc } from './objects/arc.js';
 
-import { default as Constants } from './constants.js';
+import { default as Settings } from './settings.js';
 import { default as complexCollide } from './physics/collision.js';
 
 export class GraphRender {
@@ -14,14 +14,14 @@ export class GraphRender {
     private static view: d3.Selection<SVGSVGElement, unknown, HTMLElement, never>;
     private static state: GraphState;
 
-    protected static defaults = { ...Constants.defaultSizes };
+    protected static defaults = { ...Settings.defaultSizes };
     protected static viewCenter = { X: this.defaults.viewportWidth / 2, Y: this.defaults.viewportHeight / 2 };
 
     public static renderObjects() {
 
         this.state = GraphState.getInstance();
 
-        if (Constants.debugMode) {
+        if (Settings.debugMode) {
             d3.select("#debugPanel").style("display", "flex");
             console.debug(this.state);
         }
@@ -29,7 +29,7 @@ export class GraphRender {
         d3.select("#viewport").selectChildren().remove();
         d3.select("#name").text(this.state.name);
 
-        this.simulation = d3.forceSimulation().stop();
+        this.simulation = d3.forceSimulation().velocityDecay(0.25).stop();
         this.view = d3.select("#viewport")
             .append("svg")
             .attr("height", this.defaults.viewportHeight)
@@ -41,6 +41,19 @@ export class GraphRender {
     }
 
     protected static createObjects(): Array<d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>> {
+
+        const links = this.view.selectAll(".arc")
+            .data(this.state.arcs)
+            .join((enter) => { 
+                return enter.append("line")
+                    .attr("class", "arc")
+                    .attr("marker-end", "url(#marker-end)")
+                    .attr("marker-end", "url(#marker-end)")
+                    .attr("x1", this.viewCenter.X)
+                    .attr("x2", this.viewCenter.X)
+                    .attr("y1", this.viewCenter.Y)
+                    .attr("y2", this.viewCenter.Y);
+            });
 
         const positions = this.view.selectAll(".position")
             .data(this.state.positions)
@@ -79,37 +92,23 @@ export class GraphRender {
                 .on("drag", this.draggedNode)
                 .on("end", this.dragendedNode));
 
-        const links = this.view.selectAll(".arc")
-            .data(this.state.arcs)
-            .join((enter) => { 
-                return enter.append("line")
-                    .attr("class", "arc")
-                    .attr("marker-end", "url(#marker-end)")
-                    .attr("marker-end", "url(#marker-end)")
-                    .attr("x1", this.viewCenter.X)
-                    .attr("x2", this.viewCenter.X)
-                    .attr("y1", this.viewCenter.Y)
-                    .attr("y2", this.viewCenter.Y);
-                });
-
         return [positions, transitions, links];
     }
 
     protected static createAdditional(): void {
-
         this.view.append("defs").selectAll("marker")
             .data(["marker-end"])
             .enter().append("svg:marker")
                 .attr("id", String)
-                .attr("viewBox", "0 -5 10 10")
-                .attr("refX", 35)
+                .attr("viewBox", "-5 -5 10 10")
+                .attr("refX", 0)
                 .attr("refY", 0)
-                .attr("markerWidth", 8)
-                .attr("markerHeight", 8)
+                .attr("markerWidth", this.defaults.sizeArrow)
+                .attr("markerHeight", this.defaults.sizeArrow)
                 .attr("orient", "auto")
                 .append("svg:path")
                     .attr("class", "arc-end")
-                    .attr("d", "M0,-5 L10,0 L0,5");
+                    .attr("d", "M-5,-5 L5,0 L-5,5");
     }
 
     protected static doAnimate(objects: d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
@@ -130,22 +129,28 @@ export class GraphRender {
                     return `translate(${obj.x},${obj.y})`;
                 });
         });
-        links.transition().on("start", function start() {
+        links.each((link: Arc) => {
+            link.calcArcPoints();
+        }).transition().on("start", function start() {
             d3.active(this)
-                .attr("x1", (d: Arc) => d.source.x)
-                .attr("x2", (d: Arc) => d.target.x)
-                .attr("y1", (d: Arc) => d.source.y)
-                .attr("y2", (d: Arc) => d.target.y);
+                .attr("x1", (d: Arc) => d.startPoint.x)
+                .attr("x2", (d: Arc) => d.endPoint.x)
+                .attr("y1", (d: Arc) => d.startPoint.y)
+                .attr("y2", (d: Arc) => d.endPoint.y);
         }).transition().on("end", function end() {
             GraphRender.simulation.restart(); // First start force simulation
         });
 
         GraphRender.simulation.nodes(nodesData).on("tick", () => {
+            links.each((link: Arc) => {
+                link.calcArcPoints();
+            });
+            
             links
-                .attr("x1", (d: Arc) => d.source.x)
-                .attr("y1", (d: Arc) => d.source.y)
-                .attr("x2", (d: Arc) => d.target.x)
-                .attr("y2", (d: Arc) => d.target.y);
+                .attr("x1", (d: Arc) => d.startPoint.x)
+                .attr("x2", (d: Arc) => d.endPoint.x)
+                .attr("y1", (d: Arc) => d.startPoint.y)
+                .attr("y2", (d: Arc) => d.endPoint.y);
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
@@ -161,6 +166,7 @@ export class GraphRender {
         GraphRender.simulation.force("collide", complexCollide(
             this.defaults.positionRadius, [this.defaults.transitionWidth, this.defaults.transitionHeight])
         );
+        // GraphRender.simulation.force("charge", d3.forceManyBody().distanceMin(100).strength(500));
     }
 
     protected static dragstartedNode(event: { active: number; }, d: Node): void {
@@ -171,15 +177,18 @@ export class GraphRender {
         d.fy = d.y;
     }
 
-    protected static draggedNode(event: { x: number; y: number; }, d: Node): void {
+    protected static draggedNode(event, d: Node): void {
         d.fx = event.x;
         d.fy = event.y;
+
+        d.vy += event.dy;
+        d.vx += event.dx;
     }
 
-    protected static dragendedNode(event: { active: number; }, d: Node): void {
+    protected static dragendedNode(event, d: Node): void {
         if (!event.active) {
             GraphRender.simulation.alphaTarget(.03);
-        }  
+        }
         d.fx = null;
         d.fy = null;
     }

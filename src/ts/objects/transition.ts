@@ -1,5 +1,6 @@
+import { Point } from './point.js';
 import { Node } from './node.js';
-import { default as Constants } from '../constants.js';
+import { default as Settings } from '../settings.js';
 
 export class Transition extends Node {
 
@@ -8,12 +9,12 @@ export class Transition extends Node {
     public width: number;
 
     constructor(
-        position: { X: number, Y: number } = undefined,
+        position: Point = undefined,
         rotate: number
     ) {
         super(position, Transition);
         this.rotate = rotate;
-        this.height = Constants.defaultSizes.transitionHeight;
-        this.width = Constants.defaultSizes.transitionWidth;
+        this.height = Settings.defaultSizes.transitionHeight;
+        this.width = Settings.defaultSizes.transitionWidth;
     }
 }

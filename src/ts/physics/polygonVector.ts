@@ -1,4 +1,6 @@
-enum Poligons { PoligonA, PoligonB }
+import { Vector } from "../objects/vector";
+
+enum PoligonsEnum { PoligonA, PoligonB }
 
 /**
  * An object with a set of vectors for determining the collision, direction and force magnitude for polygons
@@ -6,7 +8,7 @@ enum Poligons { PoligonA, PoligonB }
 export class PolygonVector {
 
     public isCollide = false;
-    public vectors: [{ X: number, Y: number }[], { X: number, Y: number }[]]
+    public vectors: [Vector[], Vector[]]
 
     constructor(poligonA, poligonB) {
       this.vectors = [Array(poligonA.length), Array(poligonB.length)];
@@ -14,19 +16,19 @@ export class PolygonVector {
 
     public calcDiscrepancy(): number {
       let discrepancy = 0;
-      this.vectors[Poligons.PoligonA].forEach(vector => {
-        discrepancy += Math.abs(vector.Y - vector.X);
+      this.vectors[PoligonsEnum.PoligonA].forEach(vector => {
+        discrepancy += Math.abs(vector.y - vector.x);
       });
-      this.vectors[Poligons.PoligonB].forEach(vector => {
-        discrepancy += Math.abs(vector.Y - vector.X);
+      this.vectors[PoligonsEnum.PoligonB].forEach(vector => {
+        discrepancy += Math.abs(vector.y - vector.x);
       });
 
       return discrepancy;
     }
 
-    public calcSide(poligon: Poligons = 0): number {
+    public calcSide(poligon: PoligonsEnum = 0): number {
       return this.vectors[poligon].reduce(
-        (prev, curr, indexPolygon) => Math.abs(this.vectors[poligon][prev].X - this.vectors[poligon][prev].Y) > Math.abs(curr.X) ? prev : indexPolygon, 0
+        (prev, curr, indexPolygon) => Math.abs(this.vectors[poligon][prev].x - this.vectors[poligon][prev].y) > Math.abs(curr.x) ? prev : indexPolygon, 0
       );
     }
 }

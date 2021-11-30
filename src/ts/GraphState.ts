@@ -1,8 +1,9 @@
 import { JsonConfig, ConfigType } from './jsonConfig.js';
 import { Arc } from './objects/arc.js';
+import { Point } from './objects/point.js';
 import { Position } from './objects/position.js';
 import { Transition } from './objects/transition.js';
-import { default as Constants } from './constants.js';
+import { default as Settings } from './settings.js';
 
 enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
 
@@ -32,7 +33,7 @@ export class GraphState {
 
         const config: JSON = JsonConfig.get();
 
-        this.name = config["name"] ??= Constants.defaultName;
+        this.name = config["name"] ??= Settings.defaultName;
         this.type = config["type"];
 
         config["matrices"]["FP"].forEach((_array, key: number) => {
@@ -91,6 +92,7 @@ export class GraphState {
                 this.transitions[index].position = this.getOptimalPosition(GraphType.Transition, index);
             }
         });
+        d3.select('.debugMenu span').html('✅');
         console.log("Import completed successfully");
         return this;
     }
@@ -155,9 +157,9 @@ export class GraphState {
         return JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
-    public getOptimalPosition(graphType: GraphType, objectNumber: number): { X: number; Y: number; } {
+    public getOptimalPosition(graphType: GraphType, objectNumber: number): Point {
         if (graphType == GraphType.Position || graphType == GraphType.Transition) {
-            const { ...defaults } = { ...Constants.defaultPositions };
+            const { ...defaults } = { ...Settings.defaultPositions };
 
             // Indentation for the first position...
             const pX0 = defaults.PaddingLeft;
@@ -177,32 +179,32 @@ export class GraphState {
             let extPX = 0, extTX = 0, extPY = 0, extTY = 0;
 
             if (objectNumber) {
-                extPX = Math.max(...this.positions.slice(0, objectNumber).map(p => p.position?.X ?? 0));
-                extTX = Math.max(...this.transitions.slice(0, objectNumber).map(t => t.position?.X ?? 0));
-                extPY = Math.min(...this.positions.slice(0, objectNumber).map(p => p.position?.Y ?? Infinity));
-                extTY = Math.min(...this.transitions.slice(0, objectNumber).map(t => t.position?.Y ?? Infinity));
+                extPX = Math.max(...this.positions.slice(0, objectNumber).map(p => p.position?.x ?? 0));
+                extTX = Math.max(...this.transitions.slice(0, objectNumber).map(t => t.position?.x ?? 0));
+                extPY = Math.min(...this.positions.slice(0, objectNumber).map(p => p.position?.y ?? Infinity));
+                extTY = Math.min(...this.transitions.slice(0, objectNumber).map(t => t.position?.y ?? Infinity));
             } else {
                 deltaX = 0;  // If first
             }
             switch (graphType) {
                 case GraphType.Position: {
                     // Critical points: The value of the alternative object of the current index;
-                    const critX = this.transitions[objectNumber]?.position?.X ?? 0;
-                    const critY = this.transitions[objectNumber]?.position?.Y ?? 0;
+                    const critX = this.transitions[objectNumber]?.position?.x ?? 0;
+                    const critY = this.transitions[objectNumber]?.position?.y ?? 0;
 
                     const X = Math.max(extPX + deltaX, pX0 + deltaX, extTX + deltaX, critX);
                     const Y = Math.max(extPY - pY0 + tY0 + deltaY, Math.max(extTY, tY0) + deltaY, objectNumber % 2 ? critY + deltaY : 0, pY0);
 
-                    return { X, Y };
+                    return new Point({ x: X, y: Y });
                 }
                 case GraphType.Transition: {
-                    const critX = this.positions[objectNumber]?.position?.X ?? 0;
-                    const critY = this.positions[objectNumber]?.position?.Y ?? 0;
+                    const critX = this.positions[objectNumber]?.position?.x ?? 0;
+                    const critY = this.positions[objectNumber]?.position?.y ?? 0;
                     
                     const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX); 
                     const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
 
-                    return { X, Y };
+                    return new Point({ x: X, y: Y });
                 }
             }
         }

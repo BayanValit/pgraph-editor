@@ -135,20 +135,21 @@ svg {
 }
 
 .node {
-  stroke: $arc-color;
-
+  filter: drop-shadow( -1px 2px 3px rgb(0, 0, 0, .4));
   .position {
-    fill: rgba(44, 170, 228, 0.5);
+    fill: #b1e6fec6;
   }
   .transition {
-    fill:rgba(20, 173, 20, 0.5);
+    fill:#f4f9ffc6;
   }
   .label {
+    filter: initial;
     text-anchor: middle;
     font: normal 700 x-large "Golos";
     fill: white;
-    stroke: rgba(0, 0, 0, 0.5);
+    text-shadow: 1px 1px 2px rgb(0, 0, 0, .4);
   }
+  cursor: grab;
 }
 
 .arc { 
