@@ -1,6 +1,7 @@
 export interface ObjectInterface {
     source: ObjectInterface | Array<ObjectInterface>;
     target: ObjectInterface | Array<ObjectInterface>;
+
     /**
      * TODO: Consider new properties and methods ↓↓↓
      */

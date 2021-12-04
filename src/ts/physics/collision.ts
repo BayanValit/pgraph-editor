@@ -1,10 +1,12 @@
-import { Point } from "../objects/point.js";
+import { Point } from "../geometry/point.js";
 import { Position } from "../objects/position.js";
 import { Transition } from "../objects/transition.js";
 import { Node } from "../objects/node.js";
-import { Quadtree } from "d3-quadtree";
-import { PolygonVector } from "./polygonVector.js";
-import { Vector } from "../objects/vector.js";
+import { Polygon } from "../geometry/polygon.js";
+import { toRadians } from "../geometry/converter.js";
+import { Rectangle } from "../geometry/rectangle.js";
+import { Circle } from "../geometry/circle.js";
+import { Line } from "../geometry/line.js";
 
 // TODO: terrible collisions ↓↓↓
 export default function (radius, size) {
@@ -28,7 +30,7 @@ export default function (radius, size) {
   function force() {
     const nlength = nodes.length;
     let i,
-        tree: Quadtree<[number, number]>,
+        tree: d3.Quadtree<[number, number]>,
         node: Node,
         xi,
         yi,
@@ -89,7 +91,6 @@ export default function (radius, size) {
             if (l < r2 ** 2) {
               const v = velocity / velocities[data.index];
               const deb = (((x ** 2 / (ri + xSemiSize) ** 2)) + ((y ** 2 / (ri + ySemiSize) ** 2))) * (20 / strength);
-              console.log(deb);
 
               if (x === 0) x = jiggle(random), x *= x;
               if (y === 0) y = jiggle(random), y *= y;
@@ -105,94 +106,47 @@ export default function (radius, size) {
         }
 
         if (node.type == Transition && data.type == Transition) {
-
           const xSemiSize = quad.size[0] / 2;
           const ySemiSize = quad.size[1] / 2;
 
-          const cpoints: Point[] = [
-            new Point({ x: xi - xSemiSize, y: yi - ySemiSize }),
-            new Point({ x: xi + xSemiSize, y: yi - ySemiSize }),
-            new Point({ x: xi + xSemiSize, y: yi + ySemiSize }),
-            new Point({ x: xi - xSemiSize, y: yi + ySemiSize })
-          ]
+          const cpoints = new Rectangle(quad.size[0], quad.size[1], new Point(xi, yi));
+          const dpoints = new Rectangle(quad.size[0], quad.size[1], new Point(data.x, data.y));
 
-          const dpoints: Point[] = [
-            new Point({ x: data.x - xSemiSize, y: data.y - ySemiSize }),
-            new Point({ x: data.x + xSemiSize, y: data.y - ySemiSize }),
-            new Point({ x: data.x + xSemiSize, y: data.y + ySemiSize }),
-            new Point({ x: data.x - xSemiSize, y: data.y + ySemiSize })
-          ]
+          // const dpoints: Point[] = [
+          //   new Point(data.x - xSemiSize, data.y - ySemiSize),
+          //   new Point(data.x + xSemiSize, data.y - ySemiSize),
+          //   new Point(data.x + xSemiSize, data.y + ySemiSize),
+          //   new Point(data.x - xSemiSize, data.y + ySemiSize)
+          // ]
 
+          const ctpoligon = cpoints.rotate(rotate);
+          const dtpoligon = dpoints.rotate(rotates[data.index]);
 
-          const ctpoints: Point[] = cpoints.map(function (point) {
-            return rotateTransform(point, new Point({ x: xi, y: yi }), Math.PI * rotate / 180);
-          });
+          console.log(dtpoligon);
 
-          const dtpoints: Point[] = dpoints.map(function (point) {
-            return rotateTransform(point, new Point({ x: data.x, y: data.y }), Math.PI * rotates[data.index] / 180);
-          });
-
-
-          const collision = PolygonsCollision(ctpoints, dtpoints);
+          const collision = ctpoligon.polygonsCollision(dtpoligon);
 
           if (collision) {
               const repulsiveForce =  1 / (collision.calcDiscrepancy() / 100000);
 
-
               const v = velocity / velocities[data.index];
-
-              // const minX = ctpoints.reduce(function (prev, current) {
-              //    return current.x < prev.x ? current : prev
-              // }).x;
-              // const minY = ctpoints.reduce(function (prev, current) {
-              //   return current.y < prev.y ? current : prev
-              // }).y;
-              // const maxX = ctpoints.reduce(function (prev, current) {
-              //   return current.x > prev.x ? current : prev
-              // }).x;
-              // const maxY = ctpoints.reduce(function (prev, current) {
-              //   return current.y > prev.y ? current : prev
-              // }).y;
-
-              // const minDX = dtpoints.reduce(function (prev, current) {
-              //   return current.x < prev.x ? current : prev
-              // }).x;
-              // const minDY = dtpoints.reduce(function (prev, current) {
-              //   return current.y < prev.y ? current : prev
-              // }).y;
-              // const maxDX = dtpoints.reduce(function (prev, current) {
-              //   return current.x > prev.x ? current : prev
-              // }).x;
-              // const maxDY = dtpoints.reduce(function (prev, current) {
-              //   return current.y > prev.y ? current : prev
-              // }).y;
-
-              // const xCrit = ((maxX - minX) + (maxDX - minDX)) / 2; 
-              // const yCrit = ((maxY - minY) + (maxDY - minDY)) / 2;
 
               const xRectDist = (size[0] + quad.size[0]) / 2;
               const yRectDist = (size[1] + quad.size[1]) / 2;
-              // const xRectDist = (size[0] + quad.size[0]) / 2;
-              // const yRectDist = (size[1] + quad.size[1]) / 2;
 
               const xd = Math.abs(x) - xRectDist;
               const yd = Math.abs(y) - yRectDist;
-              // node.vx -= (x *= xd / Math.sqrt(l) * strength) * v * Math.sin(Math.PI * rotate / 180)
-              // data.vx += x * (1 - v) * Math.cos(Math.PI * rotates[data.index] / 180)
-              // const newXd = Math.abs(x) - xCrit;
-              // const newYd = Math.abs(y) - yCrit;
 
+              const nodeSide = collision.calcDirection(0);
+              const dataSide = collision.calcDirection(1);
 
-              const nodeSide = collision.calcSide(0);
-              const dataSide = collision.calcSide(1);
-
-              const cv = Vector.fromPoints(ctpoints[(nodeSide + 0) % ctpoints.length], ctpoints[(nodeSide + dtpoints.length - 1) % ctpoints.length])
+              const cv =  ctpoligon.getVector(nodeSide, nodeSide + 1)
+                .getBiNormal()
                 .getUnitVector();
 
-              const dv = Vector.fromPoints(dtpoints[(dataSide + 0) % dtpoints.length], dtpoints[(dataSide + dtpoints.length - 1) % dtpoints.length])
+              const dv = dtpoligon.getVector(dataSide, dataSide + 1)
+                .getBiNormal()
                 .getUnitVector();
-
-              // console.log(cv, dv, nodeSide, dataSide);
 
               node.vx += repulsiveForce / v * cv.x * strength
               node.vy += repulsiveForce / v * cv.y * strength
@@ -210,64 +164,7 @@ export default function (radius, size) {
     }
   }
 
-  /**
-   * @param a an array of connected points (clockwise) [{x:, y:}, {x:, y:},...] that form a closed polygon
-   * @param b an array of connected points (clockwise) [{x:, y:}, {x:, y:},...] that form a closed polygon
-   * @return PolygonVector object if there is any intersection between the 2 polygons, false otherwise
-   */
-  function PolygonsCollision(a, b): PolygonVector | false {
-    const polygons = [a, b];
-    const min: number[] = [], max: number[] = [];
-    let projected: number;
-
-    const result = new PolygonVector(a, b);
-
-    for (let indexPolygon = 0; indexPolygon < polygons.length; indexPolygon++) {
-        const polygon = polygons[indexPolygon];
-        const nextIndexPolygon = (indexPolygon + 1) % 2;
-        
-        for (let indexEdge = 0; indexEdge < polygon.length; indexEdge++) {
-
-            const p1 = polygon[indexEdge];
-            const p2 = polygon[(indexEdge + 1) % polygon.length];
-
-            const normal = { x: p2.y - p1.y, y: p1.x - p2.x };
-            
-            for (let index = 0; index < polygons.length; index++) {
-              min[index] = Infinity, max[index] = -Infinity;
-
-              for (let j = 0; j < polygons[index].length; j++) {
-                projected = normal.x * polygons[index][j].x + normal.y * polygons[index][j].y;
-
-                if (projected < min[index]) {
-                  min[index] = projected;
-                }
-                if (projected > max[index]) {
-                  max[index] = projected;
-                }
-              }
-            }
-            
-            if (max[indexPolygon] < min[nextIndexPolygon] || max[nextIndexPolygon] < min[nextIndexPolygon]) {
-              return false;
-            }
-            result.vectors[indexPolygon][indexEdge] = new Vector({ x: max[nextIndexPolygon] - min[indexPolygon], y: max[indexPolygon] - min[nextIndexPolygon] });
-        }
-    }
-    result.isCollide = true;
-    return result;
-  }
-
-  function rotateTransform(
-    point: Point,
-    centerPoint: Point,
-    alpha: number
-  ): Point {
-    const X = (point.x - centerPoint.x) * Math.cos(alpha) - (point.y - centerPoint.y) * Math.sin(alpha) + centerPoint.x;
-    const Y = (point.x - centerPoint.x) * Math.sin(alpha) + (point.y - centerPoint.y) * Math.cos(alpha) + centerPoint.y;
-
-    return new Point({x: X, y: Y});
-  }
+  
 
   function prepare(quad) {
     if (quad.data) {

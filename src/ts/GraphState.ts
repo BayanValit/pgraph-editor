@@ -1,8 +1,9 @@
 import { JsonConfig, ConfigType } from './jsonConfig.js';
 import { Arc } from './objects/arc.js';
-import { Point } from './objects/point.js';
+import { Point } from './geometry/point.js';
 import { Position } from './objects/position.js';
 import { Transition } from './objects/transition.js';
+import { ObjectInterface } from './objects/object.js';
 import { default as Settings } from './settings.js';
 
 enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
@@ -38,11 +39,11 @@ export class GraphState {
 
         config["matrices"]["FP"].forEach((_array, key: number) => {
             const options = config["positions"] ? config["positions"][key] ?? [] : [];
-            this.positions.push(new Position(options["position"], config["markup"][key] ?? 0));
+            this.positions.push(new Position(options["center"], config["markup"][key] ?? 0));
         });
         config["matrices"]["FT"].forEach((_array, key: number) => {
             const options = config["transitions"] ? config["transitions"][key] ?? [] : [];
-            this.transitions.push(new Transition(options["position"], options["rotate"] ? options["rotate"] : 0));
+            this.transitions.push(new Transition(options["center"], options["rotate"] ? options["rotate"] : 0));
         });
         config["matrices"]["FP"].forEach((array, row: number) => {
             array.forEach((element, col: number) => {
@@ -85,11 +86,11 @@ export class GraphState {
         });
 
         [...Array(Math.max(this.positions.length, this.transitions.length)).keys()].forEach((index) => {
-            if (this.positions[index] instanceof Position && this.positions[index]?.position === undefined) {
-                this.positions[index].position = this.getOptimalPosition(GraphType.Position, index);
+            if (this.positions[index] instanceof Position && this.positions[index]?.center === undefined) {
+                this.positions[index].center = this.getOptimalPosition(GraphType.Position, index);
             }
-            if (this.transitions[index] instanceof Transition && this.transitions[index]?.position === undefined) {
-                this.transitions[index].position = this.getOptimalPosition(GraphType.Transition, index);
+            if (this.transitions[index] instanceof Transition && this.transitions[index]?.center === undefined) {
+                this.transitions[index].center = this.getOptimalPosition(GraphType.Transition, index);
             }
         });
         d3.select('.debugMenu span').html('✅');
@@ -118,7 +119,7 @@ export class GraphState {
                 }
             });
             markup.push(position.marks);
-            positions.push({ position: position.position });
+            positions.push({ position: position.center });
         });
 
         this.transitions.forEach((transition, row) => {
@@ -128,7 +129,7 @@ export class GraphState {
                     FT[row][col] = arc.multiplicity;
                 }
             });
-            transitions.push({ position: transition.position, rotate: transition.rotate });
+            transitions.push({ position: transition.center, rotate: transition.rotateAngle });
         });
 
         this.arcs.forEach(arc => {
@@ -179,32 +180,32 @@ export class GraphState {
             let extPX = 0, extTX = 0, extPY = 0, extTY = 0;
 
             if (objectNumber) {
-                extPX = Math.max(...this.positions.slice(0, objectNumber).map(p => p.position?.x ?? 0));
-                extTX = Math.max(...this.transitions.slice(0, objectNumber).map(t => t.position?.x ?? 0));
-                extPY = Math.min(...this.positions.slice(0, objectNumber).map(p => p.position?.y ?? Infinity));
-                extTY = Math.min(...this.transitions.slice(0, objectNumber).map(t => t.position?.y ?? Infinity));
+                extPX = Math.max(...this.positions.slice(0, objectNumber).map(p => p.center?.x ?? 0));
+                extTX = Math.max(...this.transitions.slice(0, objectNumber).map(t => t.center?.x ?? 0));
+                extPY = Math.min(...this.positions.slice(0, objectNumber).map(p => p.center?.y ?? Infinity));
+                extTY = Math.min(...this.transitions.slice(0, objectNumber).map(t => t.center?.y ?? Infinity));
             } else {
                 deltaX = 0;  // If first
             }
             switch (graphType) {
                 case GraphType.Position: {
                     // Critical points: The value of the alternative object of the current index;
-                    const critX = this.transitions[objectNumber]?.position?.x ?? 0;
-                    const critY = this.transitions[objectNumber]?.position?.y ?? 0;
+                    const critX = this.transitions[objectNumber]?.center?.x ?? 0;
+                    const critY = this.transitions[objectNumber]?.center?.y ?? 0;
 
                     const X = Math.max(extPX + deltaX, pX0 + deltaX, extTX + deltaX, critX);
                     const Y = Math.max(extPY - pY0 + tY0 + deltaY, Math.max(extTY, tY0) + deltaY, objectNumber % 2 ? critY + deltaY : 0, pY0);
 
-                    return new Point({ x: X, y: Y });
+                    return new Point(X, Y);
                 }
                 case GraphType.Transition: {
-                    const critX = this.positions[objectNumber]?.position?.x ?? 0;
-                    const critY = this.positions[objectNumber]?.position?.y ?? 0;
+                    const critX = this.positions[objectNumber]?.center?.x ?? 0;
+                    const critY = this.positions[objectNumber]?.center?.y ?? 0;
                     
                     const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX); 
                     const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
 
-                    return new Point({ x: X, y: Y });
+                    return new Point(X, Y);
                 }
             }
         }
@@ -220,7 +221,7 @@ export class GraphState {
         return match.replace(/\s+/gs, "").replaceAll(",", ", ");
     }
 
-    protected getIndexAndType(object: Position | Transition | Arc ) {
+    protected getIndexAndType(object: ObjectInterface ) {
         if (object instanceof Position) {
             return { type: GraphType.Position, index: this.positions.indexOf(object) };
         }

@@ -9,7 +9,7 @@ window.onload = function () {
 };
 
 function init() {
-    // TODO: Drop to default path, add custom
+    // TODO: convert to library
     return fetch("../src/examples/data.example.jsonc").then(function(response) {
         return response.text().then(
             (config) => {

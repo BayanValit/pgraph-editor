@@ -19,7 +19,7 @@ export default class Settings {
         intervalX: 160, // Optimal: positionRadius * 4 = 160
         intervalY: 180, // Optimal: positionRadius * 4 + transitionHeight / 2 = 180
 
-        arcSpaceStart: 15,
-        arcSpaceEnd: 15,
+        arcMarginStart: 15,
+        arcMarginEnd: 15,
     }
 }

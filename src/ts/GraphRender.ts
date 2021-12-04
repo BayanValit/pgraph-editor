@@ -80,7 +80,7 @@ export class GraphRender {
                     .attr("class", "transition")
                     .attr("width", (obj: Transition) => obj.width)
                     .attr("height", (obj: Transition) => obj.height)
-                    .attr("transform", (obj: Transition) => `rotate(${obj.rotate} 0 0) 
+                    .attr("transform", (obj: Transition) => `rotate(${obj.rotateAngle} 0 0) 
                         translate(${- obj.width / 2},${- obj.height / 2})`);
                 node.append("text")
                     .attr("class", "label")
@@ -130,27 +130,27 @@ export class GraphRender {
                 });
         });
         links.each((link: Arc) => {
-            link.calcArcPoints();
+            link.calcMargins();
         }).transition().on("start", function start() {
             d3.active(this)
-                .attr("x1", (d: Arc) => d.startPoint.x)
-                .attr("x2", (d: Arc) => d.endPoint.x)
-                .attr("y1", (d: Arc) => d.startPoint.y)
-                .attr("y2", (d: Arc) => d.endPoint.y);
+                .attr("x1", (d: Arc) => d.start.x)
+                .attr("x2", (d: Arc) => d.end.x)
+                .attr("y1", (d: Arc) => d.start.y)
+                .attr("y2", (d: Arc) => d.end.y);
         }).transition().on("end", function end() {
             GraphRender.simulation.restart(); // First start force simulation
         });
 
         GraphRender.simulation.nodes(nodesData).on("tick", () => {
             links.each((link: Arc) => {
-                link.calcArcPoints();
+                link.calcMargins();
             });
             
             links
-                .attr("x1", (d: Arc) => d.startPoint.x)
-                .attr("x2", (d: Arc) => d.endPoint.x)
-                .attr("y1", (d: Arc) => d.startPoint.y)
-                .attr("y2", (d: Arc) => d.endPoint.y);
+                .attr("x1", (d: Arc) => d.start.x)
+                .attr("x2", (d: Arc) => d.end.x)
+                .attr("y1", (d: Arc) => d.start.y)
+                .attr("y2", (d: Arc) => d.end.y);
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
