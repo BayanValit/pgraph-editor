@@ -7,13 +7,16 @@ export class Polygon extends Figure {
 
     public length: number;
 
-    constructor(public points: Point[], center: Point = Polygon.getCenter(points), rotateAngle?: number) {
+    constructor(public points?: Point[], center: Point = Polygon.getCenter(points), rotateAngle?: number) {
         super(center, rotateAngle);
         this.points = points;
         this.length = points.length;
     }
 
-    public static getCenter(points: Point[]) {
+    public static getCenter(points?: Point[]): Point | undefined {
+        if (points === undefined) {
+            return undefined;
+        }
         return points.reduce(
             (prev, current) => new Point(prev.x + current.x, prev.y + current.y), new Point(0, 0)
         ).multiple(1 / points.length);
@@ -84,4 +87,9 @@ export class Polygon extends Figure {
     result.isCollide = true;
     return result;
   }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    protected onUpdatedCenter(_center: Point) {
+        return;
+    }
 }

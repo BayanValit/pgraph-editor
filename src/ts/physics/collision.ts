@@ -106,29 +106,15 @@ export default function (radius, size) {
         }
 
         if (node.type == Transition && data.type == Transition) {
-          const xSemiSize = quad.size[0] / 2;
-          const ySemiSize = quad.size[1] / 2;
 
-          const cpoints = new Rectangle(quad.size[0], quad.size[1], new Point(xi, yi));
-          const dpoints = new Rectangle(quad.size[0], quad.size[1], new Point(data.x, data.y));
-
-          // const dpoints: Point[] = [
-          //   new Point(data.x - xSemiSize, data.y - ySemiSize),
-          //   new Point(data.x + xSemiSize, data.y - ySemiSize),
-          //   new Point(data.x + xSemiSize, data.y + ySemiSize),
-          //   new Point(data.x - xSemiSize, data.y + ySemiSize)
-          // ]
-
-          const ctpoligon = cpoints.rotate(rotate);
-          const dtpoligon = dpoints.rotate(rotates[data.index]);
-
-          console.log(dtpoligon);
+          const ctpoligon = new Rectangle(quad.size[0], quad.size[1], new Point(xi, yi), rotate);
+          const dtpoligon = new Rectangle(quad.size[0], quad.size[1], new Point(data.x, data.y), rotates[data.index]);
 
           const collision = ctpoligon.polygonsCollision(dtpoligon);
+          console.log(dtpoligon.rotate(rotate), data.index);
 
           if (collision) {
               const repulsiveForce =  1 / (collision.calcDiscrepancy() / 100000);
-
               const v = velocity / velocities[data.index];
 
               const xRectDist = (size[0] + quad.size[0]) / 2;
@@ -207,7 +193,7 @@ export default function (radius, size) {
       node = nodes[i],
       radii[i] = +radius(node, i, nodes) ?? 0,
       sizes[i] = size(node, i, nodes) ?? [0,0],
-      rotates[i] = node.type == Transition ? (node as Transition).rotate : null,
+      rotates[i] = node.type == Transition ? (node as Transition).rotateAngle : null,
       velocities[i] = node.type == Position ? radii[i] ** 2 * Math.PI : sizes[i][0] * sizes[i][1];
     }
   }

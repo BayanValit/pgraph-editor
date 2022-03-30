@@ -9,15 +9,22 @@ export class Rectangle extends Polygon {
     constructor(
         public width: number,
         public height: number,
-        center: Point,
+        center?: Point,
         rotateAngle?: number
     ) {
-        super([
-            new Point(center.x - width / 2, center.y - height / 2),
-            new Point(center.x + width / 2, center.y - height / 2),
-            new Point(center.x + width / 2, center.y + height / 2),
-            new Point(center.x - width / 2, center.y + height / 2)
-        ], center, rotateAngle);
+        super(
+            center ? [
+                new Point(center.x - width / 2, center.y - height / 2),
+                new Point(center.x + width / 2, center.y - height / 2),
+                new Point(center.x + width / 2, center.y + height / 2),
+                new Point(center.x - width / 2, center.y + height / 2)
+            ] : new Array(4).fill(new Point(undefined, undefined)),
+            center,
+            rotateAngle
+        );
+        if (rotateAngle) {
+            this.rotate(rotateAngle);
+        }
     }
 
     public pointInRectangle(point: Point): boolean {
@@ -36,5 +43,15 @@ export class Rectangle extends Polygon {
             return true;
         }
         return false;
+    }
+
+    protected onUpdatedCenter(center?: Point) {
+        this.points = center ? [
+            new Point(center.x - this.width / 2, center.y - this.height / 2),
+            new Point(center.x + this.width / 2, center.y - this.height / 2),
+            new Point(center.x + this.width / 2, center.y + this.height / 2),
+            new Point(center.x - this.width / 2, center.y + this.height / 2)
+        ] : new Array(4).fill(new Point(undefined, undefined)),
+        center;
     }
 }
