@@ -1,17 +1,12 @@
-/* global window document fetch File URL */
-import { JsonConfig } from './lib/JsonConfig.js';
-import { GraphRender } from './lib/GraphRender.js';
-import { GraphState } from './lib/GraphState.js';
+/* global fetch document File URL window */
 
-window.onload = function () {
-    init().then(() => GraphRender.renderObjects());
-    initMouseEvents();
-    initKeyboardEvents();
-};
+import {
+    GraphState, JsonConfig, GraphRender
+} from '../lib/index';
 
 function init() {
     // TODO: convert to library
-    return fetch("../src/examples/data.example.jsonc").then(function(response) {
+    return fetch("./examples/data.example.jsonc").then(function(response) {
         return response.text().then(
             (config) => {
                 document.querySelector('#configEditor').innerHTML = config;
@@ -44,7 +39,7 @@ function initKeyboardEvents() {
 function importAndRedraw() {
     const textConfig = document.querySelector("#configEditor").value;
     // TODO: Describe the logic of error output in a separate class
-    document.querySelector('.debugMenu span').innerHTML('❌');
+    document.querySelector('.debugMenu span').innerHTML = '❌';
 
     JsonConfig.init(JSON.parse(textConfig));
     GraphState.getInstance().import();
@@ -66,3 +61,8 @@ function exportConfig() {
     
     URL.revokeObjectURL(link.href);
 }
+window.onload = function () {
+  init().then(() => GraphRender.renderObjects());
+  initMouseEvents();
+  initKeyboardEvents();
+};

@@ -1,3 +1,5 @@
 gulpfile.js
 node_modules
 build
+lib
+rollup.config.js

@@ -2,9 +2,10 @@
 
 Component of the graphical editor of the Petri net
 
-## Deployment
-Expand the project in your web server folder and run:
-- `npm install`
-- `gulp build`
+## Development
 
-Open in browser `{path-to-your-project}`/graph-editor/build
+1. Expand the project in your web server folder and run:
+- `npm install`
+- `npm start`
+
+2. Run in separate cmd `npm run serve` - it will serve application at http://localhost:8080

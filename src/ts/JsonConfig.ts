@@ -1,6 +1,6 @@
 export enum ConfigType { Default = 'default' , Inhibitory = 'inhibitory' }
 
-export class JsonConfig {
+export default class JsonConfig {
     private static json: JSON;
 
     public static init(json: JSON) {

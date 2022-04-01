@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { JsonConfig, ConfigType } from './JsonConfig';
+import JsonConfig, { ConfigType } from './JsonConfig';
 import { Arc } from './objects/arc';
 import { Point } from './geometry/point';
 import { Position } from './objects/position';
@@ -9,7 +9,7 @@ import Settings from './settings';
 
 enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
 
-export class GraphState {
+export default class GraphState {
     private static instance: GraphState;
 
     public positions: Array<Position> = [];

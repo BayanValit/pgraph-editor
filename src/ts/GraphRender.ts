@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { GraphState } from './GraphState';
+import GraphState from './GraphState';
 import { ObjectInterface } from './objects/object';
 import { Node } from './objects/node';
 import { Position } from './objects/position';
@@ -9,7 +9,7 @@ import { Arc } from './objects/arc';
 import Settings from './settings';
 import complexCollide from './physics/collision';
 
-export class GraphRender {
+export default class GraphRender {
 
     private static simulation: d3.Simulation<d3.SimulationNodeDatum, never>;
     private static view: d3.Selection<SVGSVGElement, unknown, HTMLElement, never>;
