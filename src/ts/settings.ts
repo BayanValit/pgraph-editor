@@ -1,25 +1,26 @@
-export default class Settings {
+export interface SizesSettings {
+    transitionWidth: number;
+    transitionHeight: number;
+    positionRadius: number;
+    viewportWidth: number;
+    viewportHeight: number;   
+    sizeArrow: number;
+}
 
-    public static debugMode = true;
-    public static defaultName = "Untitled network";
+export interface PositionsSettings {
+    paddingLeft: number;
+    paddingTop: number;
+    // Optimal: positionRadius * 4
+    intervalX: number;
+    // Optimal: positionRadius * 4 + transitionHeight / 2
+    intervalY: number;
+    arcMarginStart: number;
+    arcMarginEnd: number;
+}
 
-    public static defaultSizes = {
-        transitionWidth: 120,
-        transitionHeight: 40,
-        positionRadius: 40,
-        viewportWidth: 1200,
-        viewportHeight: 600,    
-        sizeArrow: 7
-    }
-
-    public static defaultPositions = {
-        // For generate auto positions
-        PaddingLeft: 100,
-        PaddingTop: 100,
-        intervalX: 160, // Optimal: positionRadius * 4 = 160
-        intervalY: 180, // Optimal: positionRadius * 4 + transitionHeight / 2 = 180
-
-        arcMarginStart: 15,
-        arcMarginEnd: 15,
-    }
+export default interface Settings {
+    debugMode: boolean;
+    name: string;
+    sizes: SizesSettings,
+    positions: PositionsSettings
 }

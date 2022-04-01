@@ -1,9 +1,13 @@
+import createDebugger from 'debug';
 import { Quadtree, quadtree } from "d3";
 import { Point } from "../geometry/point";
 import { Position } from "../objects/position";
 import { Transition } from "../objects/transition";
 import { Node } from "../objects/node";
 import { Rectangle } from "../geometry/rectangle";
+import { DEBUG_PREFIX } from '../constants';
+
+const debug = createDebugger(`${DEBUG_PREFIX}:physics:collision`);
 
 // TODO: terrible collisions ↓↓↓
 export default function (radius, size) {
@@ -108,7 +112,7 @@ export default function (radius, size) {
           const dtpoligon = new Rectangle(quad.size[0], quad.size[1], new Point(data.x, data.y), rotates[data.index]);
 
           const collision = ctpoligon.polygonsCollision(dtpoligon);
-          console.log(dtpoligon.rotate(rotate), data.index);
+          debug('%o %d', dtpoligon.rotate(rotate), data.index);
 
           if (collision) {
               const repulsiveForce =  1 / (collision.calcDiscrepancy() / 100000);

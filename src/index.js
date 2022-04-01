@@ -1,19 +1,30 @@
 /* global fetch document File URL window */
 
 import {
-    GraphState, JsonConfig, GraphRender
+    GraphState, GraphRender
 } from '../lib/index';
+import graphStateDataFromJson from '../lib/utils/graphStateFromJson';
 
-function init() {
-    // TODO: convert to library
-    return fetch("./examples/data.example.jsonc").then(function(response) {
-        return response.text().then(
-            (config) => {
-                document.querySelector('#configEditor').innerHTML = config;
-                JsonConfig.init(JSON.parse(config));
-            }
-        ).then(() => GraphState.getInstance().import());
-    })
+const graph = {
+    state: undefined,
+    renderer: undefined,
+};
+
+function fetchGraphState() {
+    return fetch("./examples/data.example.jsonc")
+        .then((res) => res.text())
+        .then((serialized) => {
+            document.querySelector('#configEditor').innerHTML = serialized;
+            return graphStateDataFromJson(serialized)
+        })
+        .then((graphStateData) => GraphState.create(graphStateData))
+}
+
+function update(state) {
+    document.getElementById('name').textContent = state.name;
+    graph.state = state;
+    graph.renderer = new GraphRender('#viewport', { state })
+    graph.renderer.render();
 }
 
 function initMouseEvents() {
@@ -37,21 +48,18 @@ function initKeyboardEvents() {
 }
 
 function importAndRedraw() {
-    const textConfig = document.querySelector("#configEditor").value;
+    const configJson = document.querySelector("#configEditor").value;
     // TODO: Describe the logic of error output in a separate class
     document.querySelector('.debugMenu span').innerHTML = '❌';
-
-    JsonConfig.init(JSON.parse(textConfig));
-    GraphState.getInstance().import();
-    GraphRender.renderObjects();
+    update(GraphState.create(graphStateDataFromJson(configJson)));
 }
 
 function exportConfig() {
-    const configJson = GraphState.getInstance().export();
+    const configJson = graph.state.serialize();
     document.querySelector("#configEditor").value = configJson;
 
     const link = document.createElement("a");
-    const file = new File([configJson], GraphState.getInstance().name + ".json", {
+    const file = new File([configJson], graph.state.name + ".json", {
         type: "application/json",
     });
 
@@ -62,7 +70,11 @@ function exportConfig() {
     URL.revokeObjectURL(link.href);
 }
 window.onload = function () {
-  init().then(() => GraphRender.renderObjects());
-  initMouseEvents();
-  initKeyboardEvents();
+    document.getElementById("debugPanel").style.display = "flex";
+
+    fetchGraphState().then((state) => {
+        update(state);
+    });
+    initMouseEvents();
+    initKeyboardEvents();
 };

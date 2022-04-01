@@ -1,8 +1,8 @@
 import { Point } from '../geometry/point';
 import { Node } from './node';
-import { default as Settings } from '../settings';
 import { Circle } from '../geometry/circle';
 import { Arc } from './arc';
+import { DEFAULT_SETTINGS } from '../constants';
 
 export class Position extends Circle implements Node {
 
@@ -23,7 +23,8 @@ export class Position extends Circle implements Node {
         center: Point = undefined,
         marks: number
     ) {
-        super(center, Settings.defaultSizes.positionRadius)
+        // TODO: positionRadius should be passed as an argument
+        super(center, DEFAULT_SETTINGS.sizes.positionRadius)
         this.marks = marks;
     }
 }

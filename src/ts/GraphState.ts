@@ -1,126 +1,172 @@
-import * as d3 from 'd3';
-import JsonConfig, { ConfigType } from './JsonConfig';
 import { Arc } from './objects/arc';
 import { Point } from './geometry/point';
 import { Position } from './objects/position';
 import { Transition } from './objects/transition';
 import { ObjectInterface } from './objects/object';
-import Settings from './settings';
+import { PositionsSettings } from './Settings';
+import { Matrix } from './utils/matrix';
+import { DEFAULT_SETTINGS } from './constants';
 
-enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
+enum ElementType {
+    Position = "P" ,
+    Transition = "T" ,
+    Arc = "A"
+}
+
+export enum ConfigType {
+    Default = 'default',
+    Inhibitory = 'inhibitory'
+}
+
+
+type PositionData = { center: Point };
+
+type TransitionData = { center: Point, rotate: number };
+
+type ArcData = { binding: string; anchors: Point[] };
+
+export interface GraphStateData {
+    name: string;
+    type: ConfigType;
+    markup: number[];
+    matrices: {
+        FP: Matrix;
+        FT: Matrix;
+        FI?: Matrix;
+    },
+    positions?: Array<PositionData>;
+    transitions?: Array<TransitionData>;
+    arcs?: Array<ArcData>;
+}
+
+interface GraphStateConstructorParams {
+    name: string;
+    type: ConfigType;
+    positions: Array<Position>;
+    transitions: Array<Transition>;
+    arcs: Array<Arc>;
+}
 
 export default class GraphState {
-    private static instance: GraphState;
-
+    public name: string;
+    public type: ConfigType;
     public positions: Array<Position> = [];
     public transitions: Array<Transition> = [];
     public arcs: Array<Arc> = [];
-    public name: string;
-    public type: ConfigType;
 
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    private constructor() {}
-
-    public static getInstance(): GraphState {
-        if (!GraphState.instance) {
-            GraphState.instance = new GraphState();
-        }
-        return GraphState.instance;
+    constructor(args: GraphStateConstructorParams, positions: PositionsSettings = DEFAULT_SETTINGS.positions) {
+        this.name = args.name;
+        this.type = args.type;
+        this.positions = args.positions;
+        this.transitions = args.transitions;
+        this.arcs = args.arcs;
+        this.setCenters(positions);
     }
 
-    public import() {
-        this.positions = [];
-        this.transitions = [];
-        this.arcs = [];
+    public static create(data: GraphStateData, positionsSettings: PositionsSettings = DEFAULT_SETTINGS.positions) {
+        const positions: Position[] = [];
+        const transitions: Transition[] = [];
+        const arcs: Arc[] = [];
 
-        const config: JSON = JsonConfig.get();
+        const name = data.name;
+        const type = data.type;
 
-        this.name = config["name"] ??= Settings.defaultName;
-        this.type = config["type"];
-
-        config["matrices"]["FP"].forEach((_array, key: number) => {
-            const options = config["positions"] ? config["positions"][key] ?? [] : [];
-            this.positions.push(new Position(options["center"], config["markup"][key] ?? 0));
+        data.matrices.FP.forEach((_, key: number) => {
+            const position = data.positions[key] ?? { center: undefined };
+            positions.push(new Position(position.center, data.markup[key] ?? 0));
         });
-        config["matrices"]["FT"].forEach((_array, key: number) => {
-            const options = config["transitions"] ? config["transitions"][key] ?? [] : [];
-            this.transitions.push(new Transition(options["center"], options["rotate"] ? options["rotate"] : 0));
+
+        data.matrices.FT.forEach((_, key: number) => {
+            const transition = data.transitions[key] ?? { center: undefined, rotate: undefined };
+            transitions.push(new Transition(transition.center, transition.rotate ?? 0));
         });
-        config["matrices"]["FP"].forEach((array, row: number) => {
+
+        // FIXME: not DRY
+        data.matrices.FP.forEach((array, row: number) => {
             array.forEach((element, col: number) => {
                 if (element) {
-                    const arc_serial = "P" + (row + 1) + "-T" + (col + 1);
-                    
-                    const options = config["arcs"] ? (config["arcs"] as []).find(x => x["binding"] == arc_serial) ?? [] : [];
+                    const serial = "P" + (row + 1) + "-T" + (col + 1);
+                    const arcData = data.arcs?.find((x) => x.binding == serial);
                     const arc = new Arc(
-                        arc_serial,
-                        this.positions[row],
-                        this.transitions[col],
-                        this.type == ConfigType.Inhibitory ? Boolean(config["matrices"]["FI"][row][col]) : false,
+                        serial,
+                        positions[row],
+                        transitions[col],
+                        type == ConfigType.Inhibitory ? Boolean(data.matrices.FI[row][col]) : false,
                         element,
-                        options ? options["anchors"] : []
+                        positionsSettings.arcMarginStart,
+                        positionsSettings.arcMarginEnd,
+                        arcData ? arcData.anchors : []
                     );
-                    this.positions[row].target.push(arc);
-                    this.transitions[col].source.push(arc);
-                    this.arcs.push(arc);
+                    positions[row].target.push(arc);
+                    transitions[col].source.push(arc);
+                    arcs.push(arc);
                 }
             });
         });
-        config["matrices"]["FT"].forEach((array, row: number) => {
+        data.matrices.FT.forEach((array, row: number) => {
             array.forEach((element, col: number) => {
                 if (element) {
-                    const arc_serial = "T" + (row + 1) + "-P" + (col + 1);
-                    const options = config["arcs"] ? (config["arcs"] as []).find(x => x["binding"] == arc_serial) ?? [] : [];
+                    const serial = "T" + (row + 1) + "-P" + (col + 1);
+                    const arcData = data.arcs?.find((x) => x.binding == serial);
                     const arc = new Arc(
-                        arc_serial,
-                        this.transitions[row],
-                        this.positions[col],
+                        serial,
+                        transitions[row],
+                        positions[col],
                         false,
                         element,
-                        options ? options["anchors"] : []
+                        positionsSettings.arcMarginStart,
+                        positionsSettings.arcMarginEnd,
+                        arcData ? arcData.anchors : []
                     );
-                    this.transitions[row].target.push(arc);
-                    this.positions[col].source.push(arc);
-                    this.arcs.push(arc);
+                    transitions[row].target.push(arc);
+                    positions[col].source.push(arc);
+                    arcs.push(arc);
                 }
             });
         });
-
-        [...Array(Math.max(this.positions.length, this.transitions.length)).keys()].forEach((index) => {
-            if (this.positions[index] instanceof Position && this.positions[index]?.center === undefined) {
-                this.positions[index].center = this.getOptimalPosition(GraphType.Position, index);
-            }
-            if (this.transitions[index] instanceof Transition && this.transitions[index]?.center === undefined) {
-                this.transitions[index].center = this.getOptimalPosition(GraphType.Transition, index);
-            }
-        });
-        d3.select('.debugMenu span').html('✅');
-        console.log("Import completed successfully");
-        return this;
+        return new GraphState({
+            name,
+            type,
+            positions,
+            transitions,
+            arcs
+        }, positionsSettings);
     }
 
-    public export() {
-        const matrixCreator = (rows, cols) => new Array(rows).fill(null).map(() => new Array(cols).fill(0));
+    protected setCenters(positions: PositionsSettings) {
+        const n = Math.max(this.positions.length, this.transitions.length);
+        for (let i = 0; i < n; i += 1) {
+            if (this.positions[i] && this.positions[i].center === undefined) {
+                this.positions[i].center = this.getOptimalPosition(ElementType.Position, i, positions);
+            }
+            if (this.transitions[i] && this.transitions[i].center === undefined) {
+                this.transitions[i].center = this.getOptimalPosition(ElementType.Transition, i, positions);
+            }
+        }
+    }
+
+    public serialize(): string {
+        const matrixCreator = (rows: number, cols: number): Matrix => new Array(rows).fill(undefined).map(() => new Array(cols).fill(0));
 
         const FP = matrixCreator(this.positions.length, this.transitions.length);
         const FT = matrixCreator(this.transitions.length, this.positions.length);
         const FI = matrixCreator(this.positions.length, this.transitions.length);
-        const markup = [];
+        const markup: number[] = [];
 
-        const positions = [];
-        const transitions = [];
-        const arcs = [];
+        const positions: PositionData[] = [];
+        const transitions: TransitionData[] = [];
+        const arcs: ArcData[] = [];
         
         this.positions.forEach((position, row) => {
             position.target.forEach(arc => {
                 const col = this.transitions.indexOf(arc.target as Transition);
                 if (col >= 0) {
                     FP[row][col] = arc.multiplicity;
-                    FI[row][col] = Number(arc.has_inhibitory);
+                    FI[row][col] = Number(arc.hasInhibitory);
                 }
             });
             markup.push(position.marks);
-            positions.push({ position: position.center });
+            positions.push({ center: position.center });
         });
 
         this.transitions.forEach((transition, row) => {
@@ -130,10 +176,10 @@ export default class GraphState {
                     FT[row][col] = arc.multiplicity;
                 }
             });
-            transitions.push({ position: transition.center, rotate: transition.rotateAngle });
+            transitions.push({ center: transition.center, rotate: transition.rotateAngle });
         });
 
-        this.arcs.forEach(arc => {
+        this.arcs.forEach((arc: Arc) => {
             const from = this.getIndexAndType(arc.source);
             const to = this.getIndexAndType(arc.target);
             const binding = from.type + (from.index + 1) + "-" + to.type + (to.index + 1);
@@ -146,7 +192,7 @@ export default class GraphState {
             matrices.FI = null;
         }
 
-        const config = {
+        const config: GraphStateData = {
             name: this.name,
             matrices,
             markup,
@@ -159,21 +205,24 @@ export default class GraphState {
         return JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
-    public getOptimalPosition(graphType: GraphType, objectNumber: number): Point {
-        if (graphType == GraphType.Position || graphType == GraphType.Transition) {
-            const { ...defaults } = { ...Settings.defaultPositions };
+    public getOptimalPosition(
+        graphType: ElementType,
+        objectNumber: number,
+        positions: PositionsSettings
+    ): Point {
+        if (graphType == ElementType.Position || graphType == ElementType.Transition) {
 
             // Indentation for the first position...
-            const pX0 = defaults.PaddingLeft;
-            const pY0 = defaults.PaddingTop;
+            const pX0 = positions.paddingLeft;
+            const pY0 = positions.paddingTop;
 
             // ...and for the first transition
             const tX0 = pX0;
-            const tY0 = pY0 + defaults.intervalY;
+            const tY0 = pY0 + positions.intervalY;
 
             // Intervals between objects
-            let deltaX = defaults.intervalX;
-            let deltaY = defaults.intervalY;
+            let deltaX = positions.intervalX;
+            let deltaY = positions.intervalY;
             
             deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
 
@@ -189,7 +238,7 @@ export default class GraphState {
                 deltaX = 0;  // If first
             }
             switch (graphType) {
-                case GraphType.Position: {
+                case ElementType.Position: {
                     // Critical points: The value of the alternative object of the current index;
                     const critX = this.transitions[objectNumber]?.center?.x ?? 0;
                     const critY = this.transitions[objectNumber]?.center?.y ?? 0;
@@ -199,7 +248,7 @@ export default class GraphState {
 
                     return new Point(X, Y);
                 }
-                case GraphType.Transition: {
+                case ElementType.Transition: {
                     const critX = this.positions[objectNumber]?.center?.x ?? 0;
                     const critY = this.positions[objectNumber]?.center?.y ?? 0;
                     
@@ -222,15 +271,15 @@ export default class GraphState {
         return match.replace(/\s+/gs, "").replaceAll(",", ", ");
     }
 
-    protected getIndexAndType(object: ObjectInterface ) {
+    protected getIndexAndType(object: ObjectInterface) {
         if (object instanceof Position) {
-            return { type: GraphType.Position, index: this.positions.indexOf(object) };
+            return { type: ElementType.Position, index: this.positions.indexOf(object) };
         }
         if (object instanceof Transition) {
-            return { type: GraphType.Transition, index: this.transitions.indexOf(object) };
+            return { type: ElementType.Transition, index: this.transitions.indexOf(object) };
         }
         if (object instanceof Arc) {
-            return { type: GraphType.Arc, index: this.arcs.indexOf(object) };
+            return { type: ElementType.Arc, index: this.arcs.indexOf(object) };
         }
     }
 }
