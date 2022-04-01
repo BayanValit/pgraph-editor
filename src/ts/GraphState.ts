@@ -67,17 +67,18 @@ export default class GraphState {
         const positions: Position[] = [];
         const transitions: Transition[] = [];
         const arcs: Arc[] = [];
+        const initialPoint = new Point(0, 0);
 
         const name = data.name;
         const type = data.type;
 
         data.matrices.FP.forEach((_, key: number) => {
-            const position = data.positions[key] ?? { center: undefined };
+            const position = data.positions && data.positions[key] || { center: initialPoint };
             positions.push(new Position(position.center, data.markup[key] ?? 0));
         });
 
         data.matrices.FT.forEach((_, key: number) => {
-            const transition = data.transitions[key] ?? { center: undefined, rotate: undefined };
+            const transition = data.transitions && data.transitions[key] || { center: initialPoint, rotate: 0 };
             transitions.push(new Transition(transition.center, transition.rotate ?? 0));
         });
 
