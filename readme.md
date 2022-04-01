@@ -3,8 +3,9 @@
 Component of the graphical editor of the Petri net
 
 ## Deployment
-Expand the project in your web server folder and run:
+
+1. Expand the project in your web server folder and run:
 - `npm install`
 - `gulp build`
 
-Open in browser `{path-to-your-project}`/graph-editor/build
+2. Open in browser [without CORS](https://alfilatov.com/posts/run-chrome-without-cors/) `{path-to-your-project}`/graph-editor/build
