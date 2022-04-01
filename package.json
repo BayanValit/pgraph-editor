@@ -1,5 +1,5 @@
 {
-  "name": "@bayan-valit/pgraph-editor",
+  "name": "@bayanvalit/pgraph-editor",
   "version": "0.0.2",
   "description": "graph editor for Petry nets",
   "main": "lib/index.js",
@@ -23,7 +23,9 @@
     "postversion": "git push && git push --tags"
   },
   "repository": {
-    "private": true
+    "private": true,
+    "type": "git",
+    "url": "git+https://github.com/BayanValit/pgraph-editor.git"
   },
   "author": "BayanValit",
   "license": "ISC",
