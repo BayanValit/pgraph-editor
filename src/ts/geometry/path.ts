@@ -1,5 +1,5 @@
-import { Line } from "./line.js";
-import { Point } from "./point.js";
+import { Line } from "./line";
+import { Point } from "./point";
 
 export class Path extends Line {
 

@@ -1,9 +1,9 @@
-import { Circle } from "./circle.js";
-import { toRadians } from "./converter.js";
-import { Figure } from "./figure.js";
-import { Point } from "./point.js";
-import { Rectangle } from "./rectangle.js";
-import { Vector } from "./vector.js";
+import { Circle } from "./circle";
+import { toRadians } from "./converter";
+import { Figure } from "./figure";
+import { Point } from "./point";
+import { Rectangle } from "./rectangle";
+import { Vector } from "./vector";
 
 export class Line {
 

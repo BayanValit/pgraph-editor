@@ -1,4 +1,4 @@
-import { toRadians } from "./converter.js";
+import { toRadians } from "./converter";
 
 export class Point {
 

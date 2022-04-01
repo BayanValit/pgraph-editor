@@ -1,14 +1,15 @@
-import { GraphState } from './graphState.js';
-import { ObjectInterface } from './objects/object.js';
-import { Node } from './objects/node.js';
-import { Position } from './objects/position.js';
-import { Transition } from './objects/transition.js';
-import { Arc } from './objects/arc.js';
+import * as d3 from 'd3';
+import GraphState from './GraphState';
+import { ObjectInterface } from './objects/object';
+import { Node } from './objects/node';
+import { Position } from './objects/position';
+import { Transition } from './objects/transition';
+import { Arc } from './objects/arc';
 
-import { default as Settings } from './settings.js';
-import { default as complexCollide } from './physics/collision.js';
+import Settings from './settings';
+import complexCollide from './physics/collision';
 
-export class GraphRender {
+export default class GraphRender {
 
     private static simulation: d3.Simulation<d3.SimulationNodeDatum, never>;
     private static view: d3.Selection<SVGSVGElement, unknown, HTMLElement, never>;

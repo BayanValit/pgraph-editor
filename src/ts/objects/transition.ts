@@ -1,8 +1,8 @@
-import { Point } from '../geometry/point.js';
-import { Node } from './node.js';
-import { Arc } from './arc.js';
-import { Rectangle } from '../geometry/rectangle.js';
-import { default as Settings } from '../settings.js';
+import { Point } from '../geometry/point';
+import { Node } from './node';
+import { Arc } from './arc';
+import { Rectangle } from '../geometry/rectangle';
+import { default as Settings } from '../settings';
 
 export class Transition extends Rectangle implements Node {
 

@@ -1,5 +1,5 @@
-import { Point } from "./point.js";
-import { Vector } from "./vector.js";
+import { Point } from "./point";
+import { Vector } from "./vector";
 
 export function toRadians(angle: number) {
     return angle * Math.PI / 180;

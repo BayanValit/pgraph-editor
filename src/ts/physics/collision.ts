@@ -1,12 +1,9 @@
-import { Point } from "../geometry/point.js";
-import { Position } from "../objects/position.js";
-import { Transition } from "../objects/transition.js";
-import { Node } from "../objects/node.js";
-import { Polygon } from "../geometry/polygon.js";
-import { toRadians } from "../geometry/converter.js";
-import { Rectangle } from "../geometry/rectangle.js";
-import { Circle } from "../geometry/circle.js";
-import { Line } from "../geometry/line.js";
+import { Quadtree, quadtree } from "d3";
+import { Point } from "../geometry/point";
+import { Position } from "../objects/position";
+import { Transition } from "../objects/transition";
+import { Node } from "../objects/node";
+import { Rectangle } from "../geometry/rectangle";
 
 // TODO: terrible collisions ↓↓↓
 export default function (radius, size) {
@@ -30,7 +27,7 @@ export default function (radius, size) {
   function force() {
     const nlength = nodes.length;
     let i,
-        tree: d3.Quadtree<[number, number]>,
+        tree: Quadtree<[number, number]>,
         node: Node,
         xi,
         yi,
@@ -40,7 +37,7 @@ export default function (radius, size) {
         size;
 
     for (let k = 0; k < iterations; ++k) {
-      tree = d3.quadtree(nodes, xCenter, yCenter).visitAfter(prepare);
+      tree = quadtree(nodes, xCenter, yCenter).visitAfter(prepare);
       for (i = 0; i < nlength; ++i) {
         node = nodes[i];
         xi = node.x + node.vx;

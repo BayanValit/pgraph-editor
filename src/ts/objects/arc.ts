@@ -1,11 +1,12 @@
-import { Point } from '../geometry/point.js';
-import { ObjectInterface } from './object.js';
-import Settings from '../settings.js';
-import { Node } from './node.js';
-import { Path } from '../geometry/path.js';
-import { Line } from '../geometry/line.js';
+import { SimulationLinkDatum, SimulationNodeDatum } from 'd3';
+import { Point } from '../geometry/point';
+import { ObjectInterface } from './object';
+import Settings from '../settings';
+import { Node } from './node';
+import { Path } from '../geometry/path';
+import { Line } from '../geometry/line';
 
-export class Arc extends Path implements d3.SimulationLinkDatum<d3.SimulationNodeDatum>, ObjectInterface {
+export class Arc extends Path implements SimulationLinkDatum<SimulationNodeDatum>, ObjectInterface {
 
     public index?: number | undefined;
     public isInverted = false;

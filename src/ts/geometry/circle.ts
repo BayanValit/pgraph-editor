@@ -1,7 +1,7 @@
-import { Figure } from "./figure.js";
-import { Line } from "./line.js";
-import { Point } from "./point.js";
-import { Vector } from "./vector.js";
+import { Figure } from "./figure";
+import { Line } from "./line";
+import { Point } from "./point";
+import { Vector } from "./vector";
 
 export class Circle extends Figure {
 
