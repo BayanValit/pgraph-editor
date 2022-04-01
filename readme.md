@@ -26,4 +26,4 @@ Component of the graphical editor of the Petri net
     @bayan-valit:registry=https://npm.pkg.github.com
     //npm.pkg.github.com/:_authToken=<PERSONAL ACCESS TOKEN WITH read:packages SCOPE>
     ```
-2. Выполнить `npm install @bayan-valit/pgraph-editor`
+2. Выполнить `npm install @bayanvalit/pgraph-editor`
