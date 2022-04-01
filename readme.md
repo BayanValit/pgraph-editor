@@ -27,3 +27,17 @@ Component of the graphical editor of the Petri net
     //npm.pkg.github.com/:_authToken=<PERSONAL ACCESS TOKEN WITH read:packages SCOPE>
     ```
 2. Выполнить `npm install @bayanvalit/pgraph-editor`
+
+## Отладка
+
+1. Для отладки используется пакет [debug](https://github.com/debug-js/debug#readme).
+2. Текущие модули для отладки:
+    * pgraph-editor - верхний уровень
+    * pgraph-editor:physics:* - физика
+3. Для включения отладки в консоли браузера прописать:
+
+```js
+// выводить сообщения из всех модулей
+localStorage.debug = 'pgraph-editor:*'
+```
+
