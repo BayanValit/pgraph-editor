@@ -1,6 +1,6 @@
-import { Point } from "./point.js";
-import { Polygon } from "./polygon.js";
-import { Vector } from "./vector.js";
+import { Point } from "./point";
+import { Polygon } from "./polygon";
+import { Vector } from "./vector";
 
 export class Rectangle extends Polygon {
 

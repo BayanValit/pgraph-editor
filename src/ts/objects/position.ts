@@ -1,8 +1,8 @@
-import { Point } from '../geometry/point.js';
-import { Node } from './node.js';
-import { default as Settings } from '../settings.js';
-import { Circle } from '../geometry/circle.js';
-import { Arc } from './arc.js';
+import { Point } from '../geometry/point';
+import { Node } from './node';
+import { default as Settings } from '../settings';
+import { Circle } from '../geometry/circle';
+import { Arc } from './arc';
 
 export class Position extends Circle implements Node {
 

@@ -1,14 +1,25 @@
 {
-  "name": "pgraph-editor",
+  "name": "@bayan-valit/pgraph-editor",
   "version": "0.0.1",
   "description": "graph editor for Petry nets",
-  "main": "build/js/index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "files": [
+    "lib/"
+  ],
   "scripts": {
     "build": "gulp build",
-    "clear": "gulp clear",
+    "build:lib": "rimraf ./lib && tsc && copyfiles -u 1 ./src/sass/**/*.scss ./lib/assets",
+    "clean": "gulp clean",
     "start": "gulp run",
+    "serve": "sirv build --no-clear",
     "tsc": "typescript",
-    "lint": "eslint . --ext .ts"
+    "lint": "eslint . --ext .ts",
+    "format": "eslint . --ext .ts --fix",
+    "prepare": "npm run build:lib",
+    "preversion": "npm test && npm run lint",
+    "version": "npm run format && git add -A src",
+    "postversion": "git push && git push --tags"
   },
   "repository": {
     "private": true
@@ -20,12 +31,14 @@
     "@types/jsonschema": "^1.1.1",
     "@typescript-eslint/eslint-plugin": "^5.4.0",
     "@typescript-eslint/parser": "^5.4.0",
+    "copyfiles": "^2.4.1",
     "eslint": "^8.3.0",
     "gulp": "^4.0.2",
     "gulp-sass": "^5.0.0",
     "gulp-typescript": "^6.0.0-alpha.1",
     "rimraf": "^3.0.2",
     "sass": "^1.43.5",
+    "sirv-cli": "^2.0.2",
     "typescript": "^4.5.2"
   },
   "dependencies": {

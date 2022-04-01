@@ -1,10 +1,11 @@
-import { JsonConfig, ConfigType } from './jsonConfig.js';
-import { Arc } from './objects/arc.js';
-import { Point } from './geometry/point.js';
-import { Position } from './objects/position.js';
-import { Transition } from './objects/transition.js';
-import { ObjectInterface } from './objects/object.js';
-import { default as Settings } from './settings.js';
+import * as d3 from 'd3';
+import { JsonConfig, ConfigType } from './JsonConfig';
+import { Arc } from './objects/arc';
+import { Point } from './geometry/point';
+import { Position } from './objects/position';
+import { Transition } from './objects/transition';
+import { ObjectInterface } from './objects/object';
+import Settings from './settings';
 
 enum GraphType { Position = "P" , Transition = "T" , Arc = "A" }
 

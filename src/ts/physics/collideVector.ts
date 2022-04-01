@@ -1,4 +1,4 @@
-import { Vector } from "../geometry/vector.js";
+import { Vector } from "../geometry/vector";
 
 enum ObjectsEnum { ObjectA, ObjectB }
 

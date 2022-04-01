@@ -9,13 +9,15 @@ const gulp = require('gulp'),
 var path = {
     build: {
         html: 'build/',
-        ts: 'build/js/',
+        lib: 'build/lib/',
+        ts: 'lib/',
         css: 'build/css/',
         img: 'build/img/',
         fonts: 'build/fonts/'
     },
     src: {
-        html: 'src/*.html',
+        html: ['src/*.html', 'src/index.js'],
+        lib: 'lib/**/*.js*',
         ts: 'src/ts/**/*.ts',
         style: 'src/sass/**/*.scss',
         img: 'src/img/**/*.*',
@@ -58,9 +60,15 @@ gulp.task('fonts:build', function() {
         .pipe(gulp.dest(path.build.fonts));
 });
 
+gulp.task('lib:build', function() {
+    return gulp.src(path.src.lib)
+        .pipe(gulp.dest(path.build.lib));
+});
+
 gulp.task('build', gulp.series(
-    'html:build',
     'ts:build',
+    'html:build',
+    'lib:build',
     'style:build',
     'fonts:build',
     'image:build'

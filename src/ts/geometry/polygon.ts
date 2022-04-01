@@ -1,7 +1,7 @@
-import { Point } from "./point.js";
-import { CollideVector } from "../physics/collideVector.js";
-import { Vector } from "./vector.js";
-import { Figure } from "./figure.js";
+import { Point } from "./point";
+import { CollideVector } from "../physics/collideVector";
+import { Vector } from "./vector";
+import { Figure } from "./figure";
 
 export class Polygon extends Figure {
 

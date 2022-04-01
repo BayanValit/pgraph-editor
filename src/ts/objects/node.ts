@@ -1,9 +1,9 @@
-import { ObjectInterface } from './object.js';
-import { Point } from '../geometry/point.js';
-import { Arc } from './arc.js';
-import { Position } from './position.js';
-import { Transition } from './transition.js';
-import { Figure } from '../geometry/figure.js';
+import { ObjectInterface } from './object';
+import { Point } from '../geometry/point';
+import { Arc } from './arc';
+import { Position } from './position';
+import { Transition } from './transition';
+import { Figure } from '../geometry/figure';
 
 export interface Node extends d3.SimulationNodeDatum, ObjectInterface, Figure {
     index?: number | undefined;

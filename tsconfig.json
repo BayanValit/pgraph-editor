@@ -2,11 +2,12 @@
     "compilerOptions": {
         "lib": ["DOM", "ES2021"],
         "target": "ES2017",
+        "declaration": true,
         "removeComments": true,
         "sourceMap": true,
         "allowUmdGlobalAccess": true,
-        "moduleResolution": "node",
-        "outDir": "build/js",
+        "moduleResolution": "Node",
+        "outDir": "lib/",
         "module": "ES6"
     },
     "include": ["src/ts/**/*.ts"],
