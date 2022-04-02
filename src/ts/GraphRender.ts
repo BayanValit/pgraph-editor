@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 import createDebugger from 'debug';
-import GraphState from './GraphState';
+import GraphState, { GraphStateEventType } from './GraphState';
 import { ObjectInterface } from './objects/object';
 import { Node } from './objects/node';
 import { Position } from './objects/position';
@@ -220,5 +220,7 @@ export default class GraphRender {
         }
         d.fx = null;
         d.fy = null;
+        // TODO: emit node which has changed
+        this.state.emit(GraphStateEventType.Changed);
     }
 }

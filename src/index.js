@@ -1,4 +1,4 @@
-/* global fetch document File URL window */
+/* global fetch document File URL window console */
 
 import {
     GraphState, GraphRender
@@ -25,6 +25,7 @@ function update(state) {
     graph.state = state;
     graph.renderer = new GraphRender('#viewport', { state })
     graph.renderer.render();
+    graph.state.addEventListener('changed', () => console.log(graph.state.getData()));
 }
 
 function initMouseEvents() {

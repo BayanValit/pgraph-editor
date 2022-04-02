@@ -25,6 +25,10 @@ type TransitionData = { center: Point, rotate: number };
 
 type ArcData = { binding: string; anchors: Point[] };
 
+export enum GraphStateEventType {
+    Changed = 'changed'
+}
+
 export interface GraphStateData {
     name: string;
     type: ConfigType;
@@ -47,7 +51,7 @@ interface GraphStateConstructorParams {
     arcs: Array<Arc>;
 }
 
-export default class GraphState {
+export default class GraphState extends EventTarget {
     public name: string;
     public type: ConfigType;
     public positions: Array<Position> = [];
@@ -55,6 +59,7 @@ export default class GraphState {
     public arcs: Array<Arc> = [];
 
     constructor(args: GraphStateConstructorParams, positions: PositionsSettings = DEFAULT_SETTINGS.positions) {
+        super();
         this.name = args.name;
         this.type = args.type;
         this.positions = args.positions;
@@ -146,7 +151,7 @@ export default class GraphState {
         }
     }
 
-    public serialize(): string {
+    public getData(): GraphStateData {
         const matrixCreator = (rows: number, cols: number): Matrix => new Array(rows).fill(undefined).map(() => new Array(cols).fill(0));
 
         const FP = matrixCreator(this.positions.length, this.transitions.length);
@@ -193,7 +198,7 @@ export default class GraphState {
             matrices.FI = null;
         }
 
-        const config: GraphStateData = {
+        return {
             name: this.name,
             matrices,
             markup,
@@ -202,10 +207,18 @@ export default class GraphState {
             transitions,
             arcs
         }
-        
-        return JSON.stringify(config, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
+    public emit(type: GraphStateEventType) {
+        this.dispatchEvent(new CustomEvent(type));
+    }
+
+    public serialize(): string {
+        return JSON.stringify(this.getData(), null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
+    }
+
+    // TODO: this should be implemented as strategy pattern 
+    // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
     public getOptimalPosition(
         graphType: ElementType,
         objectNumber: number,
