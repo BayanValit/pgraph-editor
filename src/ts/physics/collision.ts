@@ -1,5 +1,5 @@
 import createDebugger from 'debug';
-import { Quadtree, quadtree } from "d3";
+import { Quadtree, quadtree } from "d3-quadtree";
 import { Point } from "../geometry/point";
 import { Position } from "../objects/position";
 import { Transition } from "../objects/transition";

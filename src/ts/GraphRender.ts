@@ -1,4 +1,7 @@
-import * as d3 from 'd3';
+import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
+import { Selection, select, BaseType } from 'd3-selection';
+import { drag } from 'd3-drag';
+import { active } from 'd3-transition';
 import createDebugger from 'debug';
 import GraphState, { GraphStateEventType } from './GraphState';
 import { ObjectInterface } from './objects/object';
@@ -19,8 +22,8 @@ interface GraphRenderOptions {
 
 export default class GraphRender {
 
-    private simulation: d3.Simulation<d3.SimulationNodeDatum, never>;
-    private view: d3.Selection<SVGSVGElement, unknown, HTMLElement, never>;
+    private simulation: Simulation<SimulationNodeDatum, never>;
+    private view: Selection<SVGSVGElement, unknown, HTMLElement, never>;
     private state: GraphState;
 
     protected selector: string;
@@ -45,14 +48,14 @@ export default class GraphRender {
         }
         this.viewCenter = { x: this.settings.sizes.viewportWidth / 2, y: this.settings.sizes.viewportHeight / 2 };
         // Remove children
-        d3.select(this.selector).selectChildren().remove();
+        select(this.selector).selectChildren().remove();
         // Create view 
-        this.view = d3.select(this.selector)
+        this.view = select(this.selector)
             .append("svg")
             .attr("height", this.settings.sizes.viewportHeight)
             .attr("width", this.settings.sizes.viewportWidth);
         // Init simulation
-        this.simulation = d3.forceSimulation().velocityDecay(0.25).stop();
+        this.simulation = forceSimulation().velocityDecay(0.25).stop();
         // Set state
         this.state = options.state;
     }
@@ -64,7 +67,7 @@ export default class GraphRender {
         this.doPhysics();
     }
 
-    protected createObjects(): Array<d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>> {
+    protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
 
         const links = this.view.selectAll(".arc")
             .data(this.state.arcs)
@@ -91,7 +94,7 @@ export default class GraphRender {
                     .attr("dy", ".4em")
                     .text((_obj: never, key: number) => "P" + (key + 1));
                 return node;
-            }).call(d3.drag<SVGCircleElement, never>()
+            }).call(drag<SVGCircleElement, never>()
                 .on("start", this.dragStartedNode.bind(this))
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
@@ -111,7 +114,7 @@ export default class GraphRender {
                     .attr("dy", ".35em")
                     .text((_obj: never, key: number) => "T" + (key + 1));
                 return node;
-            }).call(d3.drag<SVGRectElement, never>()
+            }).call(drag<SVGRectElement, never>()
                 .on("start", this.dragStartedNode.bind(this))
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
@@ -135,7 +138,7 @@ export default class GraphRender {
                     .attr("d", "M-5,-5 L5,0 L-5,5");
     }
 
-    protected doAnimate(objects: d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
+    protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
 
         const nodesData = [...this.state.positions, ...this.state.transitions];
         const [ positions, transitions, links ] = objects;
@@ -143,13 +146,13 @@ export default class GraphRender {
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
         positions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                d3.active(this).attr("transform", function(obj: Position) {
+                active(this).attr("transform", function(obj: Position) {
                     return `translate(${obj.x},${obj.y})`;
                 });
         });
         transitions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                d3.active(this).attr("transform", function(obj: Transition) {
+                active(this).attr("transform", function(obj: Transition) {
                     return `translate(${obj.x},${obj.y})`;
                 });
         });
@@ -159,7 +162,7 @@ export default class GraphRender {
             })
             .transition()
             .on("start", function start() {
-                d3.active(this)
+                active(this)
                     .attr("x1", (d: Arc) => d.start.x)
                     .attr("x2", (d: Arc) => d.end.x)
                     .attr("y1", (d: Arc) => d.start.y)
@@ -191,7 +194,7 @@ export default class GraphRender {
          * TODO: ADD center and border force, something like:
          * this.simulation.force("center", d3.forceCenter(this.viewCenter.x, this.viewCenter.y));
          */
-        this.simulation.force("link", d3.forceLink(this.state.arcs).strength(0));
+        this.simulation.force("link", forceLink(this.state.arcs).strength(0));
         this.simulation.force("collide", complexCollide(
             this.settings.sizes.positionRadius, [this.settings.sizes.transitionWidth, this.settings.sizes.transitionHeight])
         );
