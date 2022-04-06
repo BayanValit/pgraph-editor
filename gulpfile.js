@@ -29,6 +29,7 @@ var path = {
         html: 'src/**/*.html',
         examples: 'src/examples/**/*.jsonc',
         ts: 'src/ts/**/*.ts',
+        js: 'src/index.js',
         style: 'src/sass/**/*.scss',
         img: 'src/img/**/*.*',
         fonts: 'src/fonts/**/*.*'
@@ -94,6 +95,7 @@ gulp.task('watch', function () {
     gulp.watch([path.watch.html], gulp.series('html:build'));
     gulp.watch([path.watch.style], gulp.series('style:build'));
     gulp.watch([path.watch.ts], gulp.series('ts:build', 'bundle:build'));
+    gulp.watch([path.watch.js], gulp.series('bundle:build'));
     gulp.watch([path.watch.examples], gulp.series('examples:build'));
     gulp.watch([path.watch.img], gulp.series('image:build'));
     gulp.watch([path.watch.fonts], gulp.series('fonts:build'));

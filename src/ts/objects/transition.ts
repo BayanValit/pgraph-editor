@@ -2,7 +2,7 @@ import { Point } from '../geometry/point';
 import { Node } from './node';
 import { Arc } from './arc';
 import { Rectangle } from '../geometry/rectangle';
-import { default as Settings } from '../settings';
+import { DEFAULT_SETTINGS } from '../constants';
 
 export class Transition extends Rectangle implements Node {
 
@@ -21,6 +21,7 @@ export class Transition extends Rectangle implements Node {
         center: Point = undefined,
         rotateAngle = 0
     ) {
-        super(Settings.defaultSizes.transitionWidth, Settings.defaultSizes.transitionHeight, center, rotateAngle)
+        // TODO: transitionWidth and transitionHeight should be passed as arguments 
+        super(DEFAULT_SETTINGS.sizes.transitionWidth, DEFAULT_SETTINGS.sizes.transitionHeight, center, rotateAngle)
     }
 }

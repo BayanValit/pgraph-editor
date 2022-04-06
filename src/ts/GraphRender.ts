@@ -1,47 +1,73 @@
-import * as d3 from 'd3';
-import GraphState from './GraphState';
+import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
+import { Selection, select, BaseType } from 'd3-selection';
+import { drag } from 'd3-drag';
+import { active } from 'd3-transition';
+import createDebugger from 'debug';
+import GraphState, { GraphStateEventType } from './GraphState';
 import { ObjectInterface } from './objects/object';
 import { Node } from './objects/node';
 import { Position } from './objects/position';
 import { Transition } from './objects/transition';
 import { Arc } from './objects/arc';
-
-import Settings from './settings';
+import Settings from './Settings';
 import complexCollide from './physics/collision';
+import { DEFAULT_SETTINGS, DEBUG_PREFIX } from './constants';
+
+const debug = createDebugger(DEBUG_PREFIX);
+
+interface GraphRenderOptions {
+    settings?: Partial<Settings>;
+    state: GraphState;
+}
 
 export default class GraphRender {
 
-    private static simulation: d3.Simulation<d3.SimulationNodeDatum, never>;
-    private static view: d3.Selection<SVGSVGElement, unknown, HTMLElement, never>;
-    private static state: GraphState;
+    private simulation: Simulation<SimulationNodeDatum, never>;
+    private view: Selection<SVGSVGElement, unknown, HTMLElement, never>;
+    private state: GraphState;
 
-    protected static defaults = { ...Settings.defaultSizes };
-    protected static viewCenter = { X: this.defaults.viewportWidth / 2, Y: this.defaults.viewportHeight / 2 };
+    protected selector: string;
+    protected settings: Settings;
+    protected viewCenter: {
+        x: number,
+        y: number,
+    }
 
-    public static renderObjects() {
-
-        this.state = GraphState.getInstance();
-
-        if (Settings.debugMode) {
-            d3.select("#debugPanel").style("display", "flex");
-            console.debug(this.state);
+    constructor(selector: string, options: GraphRenderOptions) {
+        this.selector = selector;
+        this.settings = {
+            ...DEFAULT_SETTINGS,
+            sizes: {
+                ...DEFAULT_SETTINGS.sizes,
+                ...(options.settings?.sizes ?? {})
+            },
+            positions: {
+                ...DEFAULT_SETTINGS.positions,
+                ...(options.settings?.positions ?? {})
+            }
         }
-
-        d3.select("#viewport").selectChildren().remove();
-        d3.select("#name").text(this.state.name);
-
-        this.simulation = d3.forceSimulation().velocityDecay(0.25).stop();
-        this.view = d3.select("#viewport")
+        this.viewCenter = { x: this.settings.sizes.viewportWidth / 2, y: this.settings.sizes.viewportHeight / 2 };
+        // Remove children
+        select(this.selector).selectChildren().remove();
+        // Create view 
+        this.view = select(this.selector)
             .append("svg")
-            .attr("height", this.defaults.viewportHeight)
-            .attr("width", this.defaults.viewportWidth);
+            .attr("height", this.settings.sizes.viewportHeight)
+            .attr("width", this.settings.sizes.viewportWidth);
+        // Init simulation
+        this.simulation = forceSimulation().velocityDecay(0.25).stop();
+        // Set state
+        this.state = options.state;
+    }
 
+    public render() {
+        debug(this.state);
         this.createAdditional();
         this.doAnimate(this.createObjects());
         this.doPhysics();
     }
 
-    protected static createObjects(): Array<d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>> {
+    protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
 
         const links = this.view.selectAll(".arc")
             .data(this.state.arcs)
@@ -50,10 +76,10 @@ export default class GraphRender {
                     .attr("class", "arc")
                     .attr("marker-end", "url(#marker-end)")
                     .attr("marker-end", "url(#marker-end)")
-                    .attr("x1", this.viewCenter.X)
-                    .attr("x2", this.viewCenter.X)
-                    .attr("y1", this.viewCenter.Y)
-                    .attr("y2", this.viewCenter.Y);
+                    .attr("x1", this.viewCenter.x)
+                    .attr("x2", this.viewCenter.x)
+                    .attr("y1", this.viewCenter.y)
+                    .attr("y2", this.viewCenter.y);
             });
 
         const positions = this.view.selectAll(".position")
@@ -68,10 +94,10 @@ export default class GraphRender {
                     .attr("dy", ".4em")
                     .text((_obj: never, key: number) => "P" + (key + 1));
                 return node;
-            }).call(d3.drag<SVGCircleElement, never>()
-                .on("start", this.dragstartedNode)
-                .on("drag", this.draggedNode)
-                .on("end", this.dragendedNode));
+            }).call(drag<SVGCircleElement, never>()
+                .on("start", this.dragStartedNode.bind(this))
+                .on("drag", this.draggedNode.bind(this))
+                .on("end", this.dragEndedNode.bind(this)));
 
         const transitions = this.view.selectAll(".transition")
             .data(this.state.transitions)
@@ -88,15 +114,15 @@ export default class GraphRender {
                     .attr("dy", ".35em")
                     .text((_obj: never, key: number) => "T" + (key + 1));
                 return node;
-            }).call(d3.drag<SVGRectElement, never>()
-                .on("start", this.dragstartedNode)
-                .on("drag", this.draggedNode)
-                .on("end", this.dragendedNode));
+            }).call(drag<SVGRectElement, never>()
+                .on("start", this.dragStartedNode.bind(this))
+                .on("drag", this.draggedNode.bind(this))
+                .on("end", this.dragEndedNode.bind(this)));
 
         return [positions, transitions, links];
     }
 
-    protected static createAdditional(): void {
+    protected createAdditional(): void {
         this.view.append("defs").selectAll("marker")
             .data(["marker-end"])
             .enter().append("svg:marker")
@@ -104,45 +130,50 @@ export default class GraphRender {
                 .attr("viewBox", "-5 -5 10 10")
                 .attr("refX", 0)
                 .attr("refY", 0)
-                .attr("markerWidth", this.defaults.sizeArrow)
-                .attr("markerHeight", this.defaults.sizeArrow)
+                .attr("markerWidth", this.settings.sizes.sizeArrow)
+                .attr("markerHeight", this.settings.sizes.sizeArrow)
                 .attr("orient", "auto")
                 .append("svg:path")
                     .attr("class", "arc-end")
                     .attr("d", "M-5,-5 L5,0 L-5,5");
     }
 
-    protected static doAnimate(objects: d3.Selection<d3.BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
+    protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
 
         const nodesData = [...this.state.positions, ...this.state.transitions];
-        const [ positions, transitions, links ] = [...objects];
+        const [ positions, transitions, links ] = objects;
         
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
-        positions.attr("transform", `translate(${this.viewCenter.X},${this.viewCenter.Y})`)
+        positions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                d3.active(this).attr("transform", function(obj: Position) {
+                active(this).attr("transform", function(obj: Position) {
                     return `translate(${obj.x},${obj.y})`;
                 });
         });
-        transitions.attr("transform", `translate(${this.viewCenter.X},${this.viewCenter.Y})`)
+        transitions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                d3.active(this).attr("transform", function(obj: Transition) {
+                active(this).attr("transform", function(obj: Transition) {
                     return `translate(${obj.x},${obj.y})`;
                 });
         });
-        links.each((link: Arc) => {
-            link.calcMargins();
-        }).transition().on("start", function start() {
-            d3.active(this)
-                .attr("x1", (d: Arc) => d.start.x)
-                .attr("x2", (d: Arc) => d.end.x)
-                .attr("y1", (d: Arc) => d.start.y)
-                .attr("y2", (d: Arc) => d.end.y);
-        }).transition().on("end", function end() {
-            GraphRender.simulation.restart(); // First start force simulation
-        });
+        links
+            .each((link: Arc) => {
+                link.calcMargins();
+            })
+            .transition()
+            .on("start", function start() {
+                active(this)
+                    .attr("x1", (d: Arc) => d.start.x)
+                    .attr("x2", (d: Arc) => d.end.x)
+                    .attr("y1", (d: Arc) => d.start.y)
+                    .attr("y2", (d: Arc) => d.end.y);
+            })
+            .transition()
+            .on("end", () => {
+                this.simulation.restart(); // First start force simulation
+            });
 
-        GraphRender.simulation.nodes(nodesData).on("tick", () => {
+        this.simulation.nodes(nodesData).on("tick", () => {
             links.each((link: Arc) => {
                 link.calcMargins();
             });
@@ -158,27 +189,27 @@ export default class GraphRender {
         });
     }
 
-    protected static doPhysics() {
+    protected doPhysics() {
         /**
          * TODO: ADD center and border force, something like:
-         * GraphRender.simulation.force("center", d3.forceCenter(this.viewCenter.X, this.viewCenter.Y));
+         * this.simulation.force("center", d3.forceCenter(this.viewCenter.x, this.viewCenter.y));
          */
-        GraphRender.simulation.force("link", d3.forceLink(this.state.arcs).strength(0));
-        GraphRender.simulation.force("collide", complexCollide(
-            this.defaults.positionRadius, [this.defaults.transitionWidth, this.defaults.transitionHeight])
+        this.simulation.force("link", forceLink(this.state.arcs).strength(0));
+        this.simulation.force("collide", complexCollide(
+            this.settings.sizes.positionRadius, [this.settings.sizes.transitionWidth, this.settings.sizes.transitionHeight])
         );
-        // GraphRender.simulation.force("charge", d3.forceManyBody().distanceMin(100).strength(500));
+        // this.simulation.force("charge", d3.forceManyBody().distanceMin(100).strength(500));
     }
 
-    protected static dragstartedNode(event: { active: number; }, d: Node): void {
+    protected dragStartedNode(event: { active: number; }, d: Node): void {
         if (!event.active) {
-            GraphRender.simulation.alphaTarget(.03).restart();
+            this.simulation.alphaTarget(.03).restart();
         }
         d.fx = d.x;
         d.fy = d.y;
     }
 
-    protected static draggedNode(event, d: Node): void {
+    protected draggedNode(event, d: Node): void {
         d.fx = event.x;
         d.fy = event.y;
 
@@ -186,11 +217,13 @@ export default class GraphRender {
         d.vx += event.dx;
     }
 
-    protected static dragendedNode(event, d: Node): void {
+    protected dragEndedNode(event, d: Node): void {
         if (!event.active) {
-            GraphRender.simulation.alphaTarget(.03);
+            this.simulation.alphaTarget(.03);
         }
         d.fx = null;
         d.fy = null;
+        // TODO: emit node which has changed
+        this.state.emit(GraphStateEventType.Changed);
     }
 }

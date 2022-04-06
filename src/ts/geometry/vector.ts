@@ -2,6 +2,9 @@ import { Line } from "./line";
 import { Point } from "./point";
 
 export class Vector {
+    // QUESTION: как это работает? 
+    // у вектора на двумерной плоскости должно быть две точки (начало и конец),
+    // чтобы определить его длину и направление
     public x?: number | undefined;
     public y?: number | undefined;
 
