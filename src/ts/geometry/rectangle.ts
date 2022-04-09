@@ -1,8 +1,8 @@
-import { Point } from "./point";
-import { Polygon } from "./polygon";
-import { Vector } from "./vector";
+import { default as Point } from "./point";
+import { default as Polygon } from "./polygon";
+import { default as Vector } from "./vector";
 
-export class Rectangle extends Polygon {
+export default class Rectangle extends Polygon {
 
     public length = 4;
 

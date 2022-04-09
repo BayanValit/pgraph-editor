@@ -1,10 +1,10 @@
-import { Point } from '../geometry/point';
-import { Node } from './node';
-import { Arc } from './arc';
-import { Rectangle } from '../geometry/rectangle';
-import { DEFAULT_SETTINGS } from '../constants';
+import { default as Point } from '../geometry/point';
+import { default as Node } from './node';
+import { default as Arc } from './arc';
+import { default as Rectangle } from '../geometry/rectangle';
+import { DEFAULT_SETTINGS } from '../settings';
 
-export class Transition extends Rectangle implements Node {
+export default class Transition extends Rectangle implements Node {
 
     public readonly type = Transition;
 
@@ -19,9 +19,10 @@ export class Transition extends Rectangle implements Node {
 
     constructor(
         center: Point = undefined,
-        rotateAngle = 0
+        rotateAngle = 0,
+        width = DEFAULT_SETTINGS.sizes.transitionWidth,
+        height = DEFAULT_SETTINGS.sizes.transitionHeight
     ) {
-        // TODO: transitionWidth and transitionHeight should be passed as arguments 
-        super(DEFAULT_SETTINGS.sizes.transitionWidth, DEFAULT_SETTINGS.sizes.transitionHeight, center, rotateAngle)
+        super(width, height, center, rotateAngle)
     }
 }

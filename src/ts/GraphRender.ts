@@ -1,17 +1,16 @@
+import { default as ObjectInterface } from './objects/objectInterface';
+import { default as Node } from './objects/node';
+import { default as Position } from './objects/position';
+import { default as Transition } from './objects/transition';
+import { default as Arc } from './objects/arc';
+import { default as Settings, DEFAULT_SETTINGS, DEBUG_PREFIX } from './settings';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { active } from 'd3-transition';
+import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
-import GraphState, { GraphStateEventType } from './GraphState';
-import { ObjectInterface } from './objects/object';
-import { Node } from './objects/node';
-import { Position } from './objects/position';
-import { Transition } from './objects/transition';
-import { Arc } from './objects/arc';
-import Settings from './Settings';
 import complexCollide from './physics/collision';
-import { DEFAULT_SETTINGS, DEBUG_PREFIX } from './constants';
 
 const debug = createDebugger(DEBUG_PREFIX);
 

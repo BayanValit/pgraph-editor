@@ -1,11 +1,11 @@
-import { Circle } from "./circle";
+import { default as Circle } from "./circle";
+import { default as Figure } from "./figure";
+import { default as Point } from "./point";
+import { default as Rectangle } from "./rectangle";
+import { default as Vector } from "./vector";
 import { toRadians } from "./converter";
-import { Figure } from "./figure";
-import { Point } from "./point";
-import { Rectangle } from "./rectangle";
-import { Vector } from "./vector";
 
-export class Line {
+export default class Line {
 
     constructor(
         public start: Point,
@@ -62,7 +62,7 @@ export class Line {
             vector = vector.getInverse();
         }
         const circeRatio = (object.radius + margin) / vector.getVectorLength();
-        return new Point(vector.x * circeRatio + object.x, vector.y * circeRatio + object.y);
+        return new Point(vector.dx * circeRatio + object.x, vector.dy * circeRatio + object.y);
     }
 
     protected marginRectangleScout(
@@ -74,7 +74,7 @@ export class Line {
         if (inverse) {
             vector = vector.getInverse();
         }
-        const arcAngle = Math.atan2(-vector.x, vector.y);
+        const arcAngle = Math.atan2(-vector.dx, vector.dy);
         const rectAngle = toRadians(object.rotateAngle);
         const rectWithSpace = { width: object.width + margin, height: object.height + margin };
         let cutLength: number;
@@ -84,6 +84,6 @@ export class Line {
             cutLength = (rectWithSpace.width) * 0.5 / Math.sin(arcAngle - rectAngle);
         }
         const rectRatio = (Math.abs(cutLength) + margin / 2) / vector.getVectorLength();
-        return new Point(vector.x * rectRatio + object.x, vector.y * rectRatio + object.y);
+        return new Point(vector.dx * rectRatio + object.x, vector.dy * rectRatio + object.y);
     }
 }

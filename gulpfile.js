@@ -11,7 +11,7 @@ const gulp = require('gulp'),
 var path = {
     build: {
         html: 'build/',
-        examples: 'build/examples',
+        examples: 'build/examples/',
         ts: 'lib/',
         css: 'build/css/',
         img: 'build/img/',
@@ -72,6 +72,11 @@ gulp.task('image:build', function () {
         .pipe(gulp.dest(path.build.img));
 });
 
+gulp.task('favicon:build', function () {
+    return gulp.src('src/favicon.ico')
+        .pipe(gulp.dest(path.build.html));
+});
+
 gulp.task('fonts:build', function() {
     return gulp.src(path.src.fonts)
         .pipe(gulp.dest(path.build.fonts));
@@ -84,7 +89,8 @@ gulp.task('build', gulp.series(
     'examples:build',
     'style:build',
     'fonts:build',
-    'image:build'
+    'image:build',
+    'favicon:build'
 ));
 
 gulp.task('clean', function (cb) {

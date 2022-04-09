@@ -12,7 +12,7 @@ Component of the graphical editor of the Petri net
 
 ## Публикация в github npm registry
 
-1. Выполнить логин: `npm login --scope=@bayanvalit --registry=https://npm.pkg.github.com`. Необходимо использовать [соответствющий токен доступа](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries).
+1. Выполнить логин: `npm login --scope=@bayanvalit --registry=https://npm.pkg.github.com`. Необходимо использовать [соответствующий токен доступа](https://docs.github.com/en/packages/learn-github-packages/about-permissions-for-github-packages#about-scopes-and-permissions-for-package-registries).
 2. Вызвать команду: `npm publish`
 
 ## Обновление версии

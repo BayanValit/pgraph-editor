@@ -1,16 +1,14 @@
-import { Line } from "./line";
-import { Point } from "./point";
+import { default as Line } from "./line";
+import { default as Point } from "./point";
 
-export class Vector {
-    // QUESTION: как это работает? 
-    // у вектора на двумерной плоскости должно быть две точки (начало и конец),
-    // чтобы определить его длину и направление
-    public x?: number | undefined;
-    public y?: number | undefined;
+export default class Vector {
 
-    constructor(x: number, y: number) {
-        this.x = x;
-        this.y = y;
+    public dx?: number | undefined;
+    public dy?: number | undefined;
+
+    constructor(dx: number, dy: number) {
+        this.dx = dx;
+        this.dy = dy;
     }
 
     public static fromPoints(start: Point, end: Point): Vector {
@@ -22,11 +20,11 @@ export class Vector {
     }
 
     public getSecondPoint(firstPoint: Point): Point {
-        return new Point(this.x + firstPoint.x, this.y + firstPoint.y);
+        return new Point(firstPoint.x + this.dx, firstPoint.y + this.dy);
     }
 
-    public scalarMultiply(vector: Vector | Point = this): number {
-        return this.x * vector.x + this.y * vector.y;
+    public scalarMultiply(vector: Vector = this): number {
+        return this.dx * vector.dx + this.dy * vector.dy;
     }
 
     public getVectorLength(): number {
@@ -35,22 +33,22 @@ export class Vector {
 
     public getUnitVector(): Vector {
         const length = this.getVectorLength();
-        return new Vector(this.x / length, this.y / length);
+        return new Vector(this.dx / length, this.dy / length);
     }
 
     public getNormal(): Vector {
-        return new Vector(-this.y, this.x);
+        return new Vector(-this.dy, this.dx);
     }
 
     public getBiNormal(): Vector {
-        return new Vector(this.y, -this.x);
+        return new Vector(this.dy, -this.dx);
     }
 
     public getInverse(): Vector {
-        return new Vector(-this.x, -this.y);
+        return new Vector(-this.dx, -this.dy);
     }
 
     public isReverse(vector: Vector): boolean {
-        return Math.sign(vector.x) != Math.sign(this.x) || Math.sign(vector.y) != Math.sign(this.y);
+        return Math.sign(vector.dx) != Math.sign(this.dx) || Math.sign(vector.dy) != Math.sign(this.dy);
     }
 }

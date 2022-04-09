@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEFAULT_SETTINGS } from "../constants";
-import { GraphStateData, ConfigType } from "../GraphState";
+import { DEFAULT_SETTINGS } from "../settings";
+import { GraphStateData, ConfigType } from "../graphState";
 import { isValidMatrix } from "./matrix";
 
 function autofix(data: any) {

@@ -1,4 +1,4 @@
 export * as utils from './utils';
-export { default as GraphRender } from './GraphRender';
-export { default as GraphState } from './GraphState';
-export type { default as Settings } from './Settings';
+export { default as GraphRender } from './graphRender';
+export { default as GraphState } from './graphState';
+export type { default as Settings } from './settings';

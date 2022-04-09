@@ -1,7 +1,7 @@
-import { Line } from "./line";
-import { Point } from "./point";
+import { default as Line } from "./line";
+import { default as Point } from "./point";
 
-export class Path extends Line {
+export default class Path extends Line {
 
     public points: Point[];
 

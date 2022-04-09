@@ -1,15 +1,15 @@
 import createDebugger from 'debug';
 import { Quadtree, quadtree } from "d3-quadtree";
-import { Point } from "../geometry/point";
-import { Position } from "../objects/position";
-import { Transition } from "../objects/transition";
-import { Node } from "../objects/node";
-import { Rectangle } from "../geometry/rectangle";
-import { DEBUG_PREFIX } from '../constants';
+import { default as Point } from "../geometry/point";
+import { default as Position } from "../objects/position";
+import { default as Transition } from "../objects/transition";
+import { default as Node } from "../objects/node";
+import { default as Rectangle } from "../geometry/rectangle";
+import { DEBUG_PREFIX } from '../settings';
 
 const debug = createDebugger(`${DEBUG_PREFIX}:physics:collision`);
 
-// TODO: terrible collisions ↓↓↓
+// ACHTUNG!: Terrible collisions! Urgently destroy the problems! ↓↓↓
 export default function (radius, size) {
   let nodes: Node[],
       sizes,
@@ -121,7 +121,10 @@ export default function (radius, size) {
               const xRectDist = (size[0] + quad.size[0]) / 2;
               const yRectDist = (size[1] + quad.size[1]) / 2;
 
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const xd = Math.abs(x) - xRectDist;
+
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               const yd = Math.abs(y) - yRectDist;
 
               const nodeSide = collision.calcDirection(0);
@@ -135,10 +138,10 @@ export default function (radius, size) {
                 .getBiNormal()
                 .getUnitVector();
 
-              node.vx += repulsiveForce / v * cv.x * strength
-              node.vy += repulsiveForce / v * cv.y * strength
-              data.vx += repulsiveForce * v * dv.x * strength
-              data.vy += repulsiveForce * v * dv.y * strength
+              node.vx += repulsiveForce / v * cv.dx * strength
+              node.vy += repulsiveForce / v * cv.dy * strength
+              data.vx += repulsiveForce * v * dv.dx * strength
+              data.vy += repulsiveForce * v * dv.dy * strength
             
             } 
           return;

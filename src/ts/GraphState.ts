@@ -1,11 +1,11 @@
-import { Arc } from './objects/arc';
-import { Point } from './geometry/point';
-import { Position } from './objects/position';
-import { Transition } from './objects/transition';
-import { ObjectInterface } from './objects/object';
-import { PositionsSettings } from './Settings';
+import { default as Arc } from './objects/arc';
+import { default as Point } from './geometry/point';
+import { default as Position } from './objects/position';
+import { default as Transition } from './objects/transition';
+import { default as ObjectInterface } from './objects/objectInterface';
+import { PositionsSettings } from './settings';
 import { Matrix } from './utils/matrix';
-import { DEFAULT_SETTINGS } from './constants';
+import { DEFAULT_SETTINGS } from './settings';
 
 enum ElementType {
     Position = "P" ,

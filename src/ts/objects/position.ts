@@ -1,10 +1,11 @@
-import { Point } from '../geometry/point';
-import { Node } from './node';
-import { Circle } from '../geometry/circle';
-import { Arc } from './arc';
-import { DEFAULT_SETTINGS } from '../constants';
+import { default as Point } from '../geometry/point';
+import { default as Node } from './node';
+import { default as Circle } from '../geometry/circle';
+import { default as Arc } from './arc';
+import { DEFAULT_SETTINGS } from '../settings';
 
-export class Position extends Circle implements Node {
+
+export default class Position extends Circle implements Node {
 
     public readonly type = Position;
 
@@ -15,16 +16,15 @@ export class Position extends Circle implements Node {
     public fy?: number | null | undefined;
 
     public marks = 0;
-    public radius: number;
     public source: Array<Arc> = [];
     public target: Array<Arc> = [];
 
     constructor(
         center: Point = undefined,
-        marks: number
+        marks = DEFAULT_SETTINGS.positions.initMarks,
+        radius = DEFAULT_SETTINGS.sizes.positionRadius
     ) {
-        // TODO: positionRadius should be passed as an argument
-        super(center, DEFAULT_SETTINGS.sizes.positionRadius)
+        super(center, radius)
         this.marks = marks;
     }
 }

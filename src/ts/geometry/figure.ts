@@ -1,6 +1,6 @@
-import { Point } from "./point";
+import { default as Point } from "./point";
 
-export abstract class Figure {
+export default abstract class Figure {
 
     public x?: number | undefined;
     public y?: number | undefined;

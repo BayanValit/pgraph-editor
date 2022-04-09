@@ -1,9 +1,9 @@
-import { Point } from "./point";
-import { CollideVector } from "../physics/collideVector";
-import { Vector } from "./vector";
-import { Figure } from "./figure";
+import { default as Point } from "./point";
+import { default as CollideVector } from "../physics/collideVector";
+import { default as Vector } from "./vector";
+import { default as Figure } from "./figure";
 
-export class Polygon extends Figure {
+export default class Polygon extends Figure {
 
     public length: number;
 
@@ -67,7 +67,7 @@ export class Polygon extends Figure {
               min[index] = Infinity, max[index] = -Infinity;
 
               for (let j = 0; j < polygons[index].length; j++) {
-                projected = normal.x * polygons[index].points[j].x + normal.y * polygons[index].points[j].y;
+                projected = normal.dx * polygons[index].points[j].x + normal.dy * polygons[index].points[j].y;
 
                 if (projected < min[index]) {
                   min[index] = projected;

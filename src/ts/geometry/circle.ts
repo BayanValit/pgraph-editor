@@ -1,9 +1,9 @@
-import { Figure } from "./figure";
-import { Line } from "./line";
-import { Point } from "./point";
-import { Vector } from "./vector";
+import { default as Figure } from "./figure";
+import { default as Line } from "./line";
+import { default as Point } from "./point";
+import { default as Vector } from "./vector";
 
-export class Circle extends Figure {
+export default class Circle extends Figure {
 
     constructor(
         center: Point,
@@ -26,9 +26,9 @@ export class Circle extends Figure {
         if (Vector.fromPoints(line.end, this.center).getVectorLength() <= this.radius) {
             return true;
         }
-        const start = unit.scalarMultiply(line.start);
-        const end = unit.scalarMultiply(line.end);
-        const center = unit.scalarMultiply(this.center);
+        const start = unit.scalarMultiply(new Vector(line.start.x, line.start.y));
+        const end = unit.scalarMultiply(new Vector(line.end.x, line.end.y));
+        const center = unit.scalarMultiply(new Vector(this.center.x, this.center.y));
 
         if (start <= center && center <= end ||
             start >= center && center >= end) {
