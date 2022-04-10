@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { DEFAULT_SETTINGS } from "../constants";
-import { GraphStateData, ConfigType } from "../_graphState";
+import { GraphStateData, ConfigType } from "../graphState";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
 

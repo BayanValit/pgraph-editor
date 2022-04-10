@@ -10,7 +10,7 @@ import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { active } from 'd3-transition';
 import { svg } from 'd3-fetch';
-import GraphState, { GraphStateEventType } from './_graphState';
+import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
 import complexCollide from './physics/collision';
 import formatMarkCount from './utils/formatText';
