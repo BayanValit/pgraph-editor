@@ -1,43 +1,20 @@
-// TODO: Split into files, add imports
-
 /**
  * Variables
  */
-$arc-color: #C9DAE7;
+$arc-color: #c9dae7;
+$black-color: #172129;
+
 
 /**
- * Fonts
+ * Mixins
  */
-@font-face {
-  font-family: "Golos";
-  font-style: normal;
-  font-weight: 400;
-  font-display: swap;
-  src: url("../fonts/Golos_Text_Regular.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Golos";
-  font-style: normal;
-  font-weight: 500;
-  font-display: swap;
-  src: url("../fonts/Golos_Text_Medium.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Golos";
-  font-style: normal;
-  font-weight: 600;
-  font-display: swap;
-  src: url("../fonts/Golos_Text_DemiBold.ttf") format("truetype");
-}
-
-@font-face {
-  font-family: "Golos";
-  font-style: normal;
-  font-weight: 700;
-  font-display: swap;
-  src: url("../fonts/Golos_Text_Bold.ttf") format("truetype");
+@mixin mark-style($property) {
+  &[marks="#{$property}"] {
+    fill: url(#mark_#{$property});
+    &~.custom-marks {
+      display: none;
+    }
+  }
 }
 
 /**
@@ -60,54 +37,6 @@ svg {
   }
 }
 
-#name {
-  font: normal 600 larger "Golos";
-}
-
-.container {
-  display: flex;
-
-  #debugPanel {
-    display: none;
-    flex: auto;
-    flex-direction: column;
-    width: 600px;
-    height: 600px;
-
-    .debugMenu {
-      font: normal 400 medium "Golos";
-
-      button {
-        padding: 5px;
-        width: 150px;
-        color: white;
-        border-radius: 5px;
-        font: inherit;
-        font-size: 0.8em;
-        &:hover {
-          cursor: pointer;
-        }
-        &#importButton {
-          background-color: darkorange;
-        }
-        &#exportButton {
-          background-color: green;
-        }
-      }
-      label {
-        padding: 5px;
-        color: black;
-        width: 120px;
-        display: inline-flex;
-        justify-content: center;
-      }
-    }
-    #configEditor {
-      flex: auto;
-    }
-  }
-}
-
 .symbol-export {
   background: darkslategrey;
   padding: 0 2px;
@@ -115,7 +44,7 @@ svg {
 }
 
 [data-tooltip] {
-  position: relative;          
+  position: relative;
   &:after {
     position: absolute;
     content: attr(data-tooltip);
@@ -135,24 +64,59 @@ svg {
 }
 
 .node {
-  filter: drop-shadow( -1px 2px 3px rgb(0, 0, 0, .4));
+  cursor: grab;
+  filter: drop-shadow(-1px 2px 3px rgb(0, 0, 0, 0.4));
+
   .position {
-    fill: #b1e6fec6;
+    fill: url(#mark_custom);
+
+    @include mark-style(0);
+    @include mark-style(1);
+    @include mark-style(2);
+    @include mark-style(3);
+    @include mark-style(4);
+    @include mark-style(5);
   }
+
   .transition {
-    fill:#f4f9ffc6;
+    fill: #f4f9ffc6;
   }
+
   .label {
     filter: initial;
     text-anchor: middle;
-    font: normal 700 x-large "Golos";
+    font-size: x-large;
+    font-weight: 700;
     fill: white;
-    text-shadow: 1px 1px 2px rgb(0, 0, 0, .4);
+    text-shadow: 1px 1px 2px rgb(0, 0, 0, 0.4);
   }
-  cursor: grab;
+
+  .custom-marks {
+    text-anchor: middle;
+    color: $black-color;
+    transform: translateX(.65em);
+    font-size: .95em;
+
+    &[symbols="1"] {
+      transform: translateX(.25em);
+      font-size: 1.4em;
+    }
+    &[symbols="2"] {
+      transform: translateX(.3em);
+      font-size: 1.3em;
+    }
+    &[symbols="3"] {
+      transform: translateX(.5em);
+      font-size: 1.2em;
+    }
+    &[symbols="4"] {
+      transform: translateX(.6em);
+      font-size: 1.1em;
+    }
+  }
 }
 
-.arc { 
+.arc {
   stroke: $arc-color;
   stroke-width: 2px;
   stroke-opacity: 0.8;

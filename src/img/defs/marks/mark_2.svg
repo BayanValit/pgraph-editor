@@ -1,0 +1,11 @@
+<pattern id="mark_2" width="100%" height="100%">
+	<circle cx="40" cy="40" r="40" fill="white" fill-opacity="0.9" stroke="#C9DAE7"/>
+	<circle cx="26.6666" cy="40" r="7.5" fill="url(#markGradient)"/>
+	<circle cx="53.3333" cy="40" r="7.5" fill="url(#markGradient)"/>
+	<defs>
+		<radialGradient id="markGradient" gradientTransform="translate(0.1 -0.1)">
+			<stop stop-color="#275580"/>
+			<stop offset="1" stop-color="#161A1E"/>
+		</radialGradient>
+	</defs>
+</pattern>

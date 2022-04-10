@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>PGraph editor</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/style.css">
   </head>
 <body>
     <h3 id="name"></h3>
@@ -14,15 +14,15 @@
         <div id="viewport"></div>
         <div id="debugPanel">
           <div class="debugMenu">
-            <label>Debugger<span>❌</span></label>
+            <label>Debugger<span>✅</span></label>
             <button id="importButton" data-tooltip='Use "ctrl + enter"'>Import & redraw 🔄</button>
-            <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span><a></a></button>
+            <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span></button>
           </div>
           <textarea id="configEditor"></textarea>
         </div>
     </div>
     <footer>
     </footer>
-    <script src='./index.js'></script>
+    <script src="./index.js" type="module"></script>
   </body>
 </html>

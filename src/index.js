@@ -70,6 +70,7 @@ function exportConfig() {
     
     URL.revokeObjectURL(link.href);
 }
+
 window.onload = function () {
     document.getElementById("debugPanel").style.display = "flex";
 

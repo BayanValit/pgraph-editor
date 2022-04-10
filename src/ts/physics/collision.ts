@@ -5,7 +5,7 @@ import { default as Position } from "../objects/position";
 import { default as Transition } from "../objects/transition";
 import { default as Node } from "../objects/node";
 import { default as Rectangle } from "../geometry/rectangle";
-import { DEBUG_PREFIX } from '../settings';
+import { DEBUG_PREFIX } from '../constants';
 
 const debug = createDebugger(`${DEBUG_PREFIX}:physics:collision`);
 

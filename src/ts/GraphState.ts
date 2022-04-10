@@ -3,9 +3,9 @@ import { default as Point } from './geometry/point';
 import { default as Position } from './objects/position';
 import { default as Transition } from './objects/transition';
 import { default as ObjectInterface } from './objects/objectInterface';
-import { PositionsSettings } from './settings';
-import { Matrix } from './utils/matrix';
-import { DEFAULT_SETTINGS } from './settings';
+import { default as Settings } from './settings';
+import { DEFAULT_SETTINGS } from './constants';
+import Matrix from './math/matrix';
 
 enum ElementType {
     Position = "P" ,
@@ -17,7 +17,6 @@ export enum ConfigType {
     Default = 'default',
     Inhibitory = 'inhibitory'
 }
-
 
 type PositionData = { center: Point };
 
@@ -58,17 +57,17 @@ export default class GraphState extends EventTarget {
     public transitions: Array<Transition> = [];
     public arcs: Array<Arc> = [];
 
-    constructor(args: GraphStateConstructorParams, positions: PositionsSettings = DEFAULT_SETTINGS.positions) {
+    constructor(args: GraphStateConstructorParams, settings: Settings = DEFAULT_SETTINGS) {
         super();
         this.name = args.name;
         this.type = args.type;
         this.positions = args.positions;
         this.transitions = args.transitions;
         this.arcs = args.arcs;
-        this.setCenters(positions);
+        this.setCenters(settings);
     }
 
-    public static create(data: GraphStateData, positionsSettings: PositionsSettings = DEFAULT_SETTINGS.positions) {
+    public static create(data: GraphStateData, settings: Settings = DEFAULT_SETTINGS) {
         const positions: Position[] = [];
         const transitions: Transition[] = [];
         const arcs: Arc[] = [];
@@ -99,8 +98,8 @@ export default class GraphState extends EventTarget {
                         transitions[col],
                         type == ConfigType.Inhibitory ? Boolean(data.matrices.FI[row][col]) : false,
                         element,
-                        positionsSettings.arcMarginStart,
-                        positionsSettings.arcMarginEnd,
+                        settings.positions.arcMarginStart,
+                        settings.positions.arcMarginEnd,
                         arcData ? arcData.anchors : []
                     );
                     positions[row].target.push(arc);
@@ -120,8 +119,8 @@ export default class GraphState extends EventTarget {
                         positions[col],
                         false,
                         element,
-                        positionsSettings.arcMarginStart,
-                        positionsSettings.arcMarginEnd,
+                        settings.positions.arcMarginStart,
+                        settings.positions.arcMarginEnd,
                         arcData ? arcData.anchors : []
                     );
                     transitions[row].target.push(arc);
@@ -136,27 +135,25 @@ export default class GraphState extends EventTarget {
             positions,
             transitions,
             arcs
-        }, positionsSettings);
+        }, settings);
     }
 
-    protected setCenters(positions: PositionsSettings) {
+    protected setCenters(settings: Settings) {
         const n = Math.max(this.positions.length, this.transitions.length);
         for (let i = 0; i < n; i += 1) {
             if (this.positions[i] && this.positions[i].center === undefined) {
-                this.positions[i].center = this.getOptimalPosition(ElementType.Position, i, positions);
+                this.positions[i].center = this.getOptimalPosition(ElementType.Position, i, settings);
             }
             if (this.transitions[i] && this.transitions[i].center === undefined) {
-                this.transitions[i].center = this.getOptimalPosition(ElementType.Transition, i, positions);
+                this.transitions[i].center = this.getOptimalPosition(ElementType.Transition, i, settings);
             }
         }
     }
 
     public getData(): GraphStateData {
-        const matrixCreator = (rows: number, cols: number): Matrix => new Array(rows).fill(undefined).map(() => new Array(cols).fill(0));
-
-        const FP = matrixCreator(this.positions.length, this.transitions.length);
-        const FT = matrixCreator(this.transitions.length, this.positions.length);
-        const FI = matrixCreator(this.positions.length, this.transitions.length);
+        const FP = Matrix.createMatrix(this.positions.length, this.transitions.length);
+        const FT = Matrix.createMatrix(this.transitions.length, this.positions.length);
+        const FI = Matrix.createMatrix(this.positions.length, this.transitions.length);
         const markup: number[] = [];
 
         const positions: PositionData[] = [];
@@ -222,21 +219,21 @@ export default class GraphState extends EventTarget {
     public getOptimalPosition(
         graphType: ElementType,
         objectNumber: number,
-        positions: PositionsSettings
+        settings: Settings
     ): Point {
         if (graphType == ElementType.Position || graphType == ElementType.Transition) {
 
             // Indentation for the first position...
-            const pX0 = positions.paddingLeft;
-            const pY0 = positions.paddingTop;
+            const pX0 = settings.positions.paddingLeft;
+            const pY0 = settings.positions.paddingTop;
 
             // ...and for the first transition
             const tX0 = pX0;
-            const tY0 = pY0 + positions.intervalY;
+            const tY0 = pY0 + settings.positions.intervalY;
 
             // Intervals between objects
-            let deltaX = positions.intervalX;
-            let deltaY = positions.intervalY;
+            let deltaX = settings.positions.intervalX;
+            let deltaY = settings.positions.intervalY;
             
             deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
 

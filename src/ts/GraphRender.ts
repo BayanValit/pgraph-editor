@@ -3,16 +3,19 @@ import { default as Node } from './objects/node';
 import { default as Position } from './objects/position';
 import { default as Transition } from './objects/transition';
 import { default as Arc } from './objects/arc';
-import { default as Settings, DEFAULT_SETTINGS, DEBUG_PREFIX } from './settings';
+import { default as Settings } from './settings';
+import * as Constants from './constants';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { active } from 'd3-transition';
+import { svg } from 'd3-fetch';
 import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
 import complexCollide from './physics/collision';
+import formatMarkCount from './utils/formatText';
 
-const debug = createDebugger(DEBUG_PREFIX);
+const debug = createDebugger(Constants.DEBUG_PREFIX);
 
 interface GraphRenderOptions {
     settings?: Partial<Settings>;
@@ -35,13 +38,13 @@ export default class GraphRender {
     constructor(selector: string, options: GraphRenderOptions) {
         this.selector = selector;
         this.settings = {
-            ...DEFAULT_SETTINGS,
+            ...Constants.DEFAULT_SETTINGS,
             sizes: {
-                ...DEFAULT_SETTINGS.sizes,
+                ...Constants.DEFAULT_SETTINGS.sizes,
                 ...(options.settings?.sizes ?? {})
             },
             positions: {
-                ...DEFAULT_SETTINGS.positions,
+                ...Constants.DEFAULT_SETTINGS.positions,
                 ...(options.settings?.positions ?? {})
             }
         }
@@ -61,9 +64,11 @@ export default class GraphRender {
 
     public render() {
         debug(this.state);
-        this.createAdditional();
-        this.doAnimate(this.createObjects());
-        this.doPhysics();
+
+        this.loadSvgResourses().then(() => {
+            this.doAnimate(this.createObjects());
+            this.doPhysics();
+        });
     }
 
     protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
@@ -87,11 +92,17 @@ export default class GraphRender {
                 const node = enter.append("g").attr("class", "node");
                 node.append("circle")
                     .attr("class", "position")
-                    .attr("r", (obj: Position) => obj.radius);
+                    .attr("r", (obj: Position) => obj.radius)
+                    .attr("marks", (obj: Position) => obj.marks);
                 node.append("text")
                     .attr("class", "label")
-                    .attr("dy", ".4em")
+                    .attr("dy", "-2em")
                     .text((_obj: never, key: number) => "P" + (key + 1));
+                node.append("text")
+                    .attr("class", "custom-marks")
+                    .attr("dy", ".33em")
+                    .attr("symbols", (obj: Position) => formatMarkCount(obj.marks).length)
+                    .text((obj: Position) => formatMarkCount(obj.marks));
                 return node;
             }).call(drag<SVGCircleElement, never>()
                 .on("start", this.dragStartedNode.bind(this))
@@ -110,7 +121,7 @@ export default class GraphRender {
                         translate(${- obj.width / 2},${- obj.height / 2})`);
                 node.append("text")
                     .attr("class", "label")
-                    .attr("dy", ".35em")
+                    .attr("dy", ".33em")
                     .text((_obj: never, key: number) => "T" + (key + 1));
                 return node;
             }).call(drag<SVGRectElement, never>()
@@ -121,20 +132,21 @@ export default class GraphRender {
         return [positions, transitions, links];
     }
 
-    protected createAdditional(): void {
-        this.view.append("defs").selectAll("marker")
-            .data(["marker-end"])
-            .enter().append("svg:marker")
-                .attr("id", String)
-                .attr("viewBox", "-5 -5 10 10")
-                .attr("refX", 0)
-                .attr("refY", 0)
-                .attr("markerWidth", this.settings.sizes.sizeArrow)
-                .attr("markerHeight", this.settings.sizes.sizeArrow)
-                .attr("orient", "auto")
-                .append("svg:path")
-                    .attr("class", "arc-end")
-                    .attr("d", "M-5,-5 L5,0 L-5,5");
+    /**
+     * Loads ready-made svg elements from files and wraps them in <defs>
+     * NOTE: To upload a new svg file, add the url in constants
+     * @return Promise<void>
+     */
+    protected async loadSvgResourses(): Promise<void> {
+        const defs = this.view.append("defs");
+        
+        const requests = Constants.SVG_RESOURSES.map(url => svg(url));
+          
+        return Promise.all(requests)
+            .then(responses => responses.forEach((response) => {
+                defs.append("svg").html(response.documentElement.outerHTML);
+            })
+        );
     }
 
     protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {

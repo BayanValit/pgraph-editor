@@ -2,11 +2,12 @@
 
 const gulp = require('gulp'),
     sass = require('gulp-sass')(require('sass')),
+    concat = require('gulp-concat'),
+    combine = require('gulp-scss-combine'),
     typescript = require('gulp-typescript'),
     rimraf = require('rimraf'),
     tsProject = typescript.createProject('tsconfig.json'),
     exec = require('child_process').exec;
-
 
 var path = {
     build: {
@@ -63,6 +64,8 @@ gulp.task('examples:build', function () {
 
 gulp.task('style:build', function () {
     return gulp.src(path.src.style)
+        .pipe(combine())
+        .pipe(concat('style.scss'))
         .pipe(sass())
         .pipe(gulp.dest(path.build.css));
 });

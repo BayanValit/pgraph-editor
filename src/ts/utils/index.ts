@@ -1,2 +1,2 @@
-export * as matrix from './matrix';
+export * as matrix from '../math/matrix';
 export { default as graphStateDataFromJson } from './graphStateFromJson';
