@@ -1,9 +1,8 @@
-import { default as Point } from '../geometry/point';
-import { default as Node } from './node';
-import { default as Circle } from '../geometry/circle';
-import { default as Arc } from './arc';
+import Point from '../geometry/point';
+import Node from './node';
+import Circle from '../geometry/circle';
+import Arc from './arc';
 import { DEFAULT_SETTINGS } from '../constants';
-
 
 export default class Position extends Circle implements Node {
 

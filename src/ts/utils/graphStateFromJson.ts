@@ -52,7 +52,7 @@ function assertIsValid(data: any): void | never {
 }
 
 function assertMatricesValid(data: any): void | never {
-    const matrices = { 
+    const matrices = {
         FP: new Matrix(data.matrices.FP),
         FT: new Matrix(data.matrices.FT),
     };
@@ -70,11 +70,17 @@ function assertMatricesValid(data: any): void | never {
         }
     }
 
+    /* TODO: Улучшение валидации конфигурации - не применять правила ниже, если нет конфликта между матрицами
+     *
+     * Конфликт возникает, если дуга существует, но не заданы объекты для этой дуги.
+     * Решение этой проблемы позволит сохранять конфигурацию, при которой существуют только позиции,
+     * либо только переходы, также задействует автоисправление при несовместимых матрицах.
+     */
     if (!matrices.FP.сompareColsWithRows(matrices.FT)) {
         throw new TypeError("FP and FT matrices dismatch");
     }
 
-    if (data.type === ConfigType.Inhibitory && !matrices.FP.сompareRowsWithRows(matrices['FI']) ) {
+    if (data.type === ConfigType.Inhibitory && !matrices.FP.сompareRowsWithRows(matrices['FI'])) {
         throw new TypeError("FI and FP matrices dismatch");
     }
 }

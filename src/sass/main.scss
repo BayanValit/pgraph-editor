@@ -4,14 +4,13 @@
 $arc-color: #c9dae7;
 $black-color: #172129;
 
-
 /**
  * Mixins
  */
 @mixin mark-style($property) {
   &[marks="#{$property}"] {
     fill: url(#mark_#{$property});
-    &~.custom-marks {
+    & ~ .custom-marks {
       display: none;
     }
   }
@@ -94,23 +93,19 @@ svg {
   .custom-marks {
     text-anchor: middle;
     color: $black-color;
-    transform: translateX(.65em);
-    font-size: .95em;
+    transform: translateX(0.65em);
+    font-size: 0.95em;
 
     &[symbols="1"] {
-      transform: translateX(.25em);
+      transform: translateX(0.25em);
       font-size: 1.4em;
     }
     &[symbols="2"] {
-      transform: translateX(.3em);
+      transform: translateX(0.3em);
       font-size: 1.3em;
     }
     &[symbols="3"] {
-      transform: translateX(.5em);
-      font-size: 1.2em;
-    }
-    &[symbols="4"] {
-      transform: translateX(.6em);
+      transform: translateX(0.6em);
       font-size: 1.1em;
     }
   }

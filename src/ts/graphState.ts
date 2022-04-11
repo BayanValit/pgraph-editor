@@ -1,15 +1,15 @@
-import { default as Arc } from './objects/arc';
-import { default as Point } from './geometry/point';
-import { default as Position } from './objects/position';
-import { default as Transition } from './objects/transition';
-import { default as ObjectInterface } from './objects/objectInterface';
-import { default as Settings } from './settings';
-import { DEFAULT_SETTINGS } from './constants';
+import Arc from './objects/arc';
+import Point from './geometry/point';
+import Position from './objects/position';
+import Transition from './objects/transition';
+import ObjectInterface from './objects/objectInterface';
 import Matrix from './math/matrix';
+import { PositionsSettings } from './settings';
+import { DEFAULT_SETTINGS } from './constants';
 
 enum ElementType {
-    Position = "P" ,
-    Transition = "T" ,
+    Position = "P",
+    Transition = "T",
     Arc = "A"
 }
 
@@ -57,7 +57,10 @@ export default class GraphState extends EventTarget {
     public transitions: Array<Transition> = [];
     public arcs: Array<Arc> = [];
 
-    constructor(args: GraphStateConstructorParams, settings: Settings = DEFAULT_SETTINGS) {
+    constructor(args: GraphStateConstructorParams, settings: PositionsSettings = DEFAULT_SETTINGS.positions) {
+        // @TODO: this should be implemented as strategy pattern 
+        // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
+
         super();
         this.name = args.name;
         this.type = args.type;
@@ -67,7 +70,7 @@ export default class GraphState extends EventTarget {
         this.setCenters(settings);
     }
 
-    public static create(data: GraphStateData, settings: Settings = DEFAULT_SETTINGS) {
+    public static create(data: GraphStateData, positionsSettings: PositionsSettings = DEFAULT_SETTINGS.positions) {
         const positions: Position[] = [];
         const transitions: Transition[] = [];
         const arcs: Arc[] = [];
@@ -98,8 +101,8 @@ export default class GraphState extends EventTarget {
                         transitions[col],
                         type == ConfigType.Inhibitory ? Boolean(data.matrices.FI[row][col]) : false,
                         element,
-                        settings.positions.arcMarginStart,
-                        settings.positions.arcMarginEnd,
+                        positionsSettings.arcMarginStart,
+                        positionsSettings.arcMarginEnd,
                         arcData ? arcData.anchors : []
                     );
                     positions[row].target.push(arc);
@@ -119,8 +122,8 @@ export default class GraphState extends EventTarget {
                         positions[col],
                         false,
                         element,
-                        settings.positions.arcMarginStart,
-                        settings.positions.arcMarginEnd,
+                        positionsSettings.arcMarginStart,
+                        positionsSettings.arcMarginEnd,
                         arcData ? arcData.anchors : []
                     );
                     transitions[row].target.push(arc);
@@ -135,10 +138,10 @@ export default class GraphState extends EventTarget {
             positions,
             transitions,
             arcs
-        }, settings);
+        }, positionsSettings);
     }
 
-    protected setCenters(settings: Settings) {
+    protected setCenters(settings: PositionsSettings) {
         const n = Math.max(this.positions.length, this.transitions.length);
         for (let i = 0; i < n; i += 1) {
             if (this.positions[i] && this.positions[i].center === undefined) {
@@ -159,7 +162,7 @@ export default class GraphState extends EventTarget {
         const positions: PositionData[] = [];
         const transitions: TransitionData[] = [];
         const arcs: ArcData[] = [];
-        
+
         this.positions.forEach((position, row) => {
             position.target.forEach(arc => {
                 const col = this.transitions.indexOf(arc.target as Transition);
@@ -214,27 +217,25 @@ export default class GraphState extends EventTarget {
         return JSON.stringify(this.getData(), null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
-    // TODO: this should be implemented as strategy pattern 
-    // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
     public getOptimalPosition(
         graphType: ElementType,
         objectNumber: number,
-        settings: Settings
+        settings: PositionsSettings
     ): Point {
         if (graphType == ElementType.Position || graphType == ElementType.Transition) {
 
             // Indentation for the first position...
-            const pX0 = settings.positions.paddingLeft;
-            const pY0 = settings.positions.paddingTop;
+            const pX0 = settings.paddingLeft;
+            const pY0 = settings.paddingTop;
 
             // ...and for the first transition
             const tX0 = pX0;
-            const tY0 = pY0 + settings.positions.intervalY;
+            const tY0 = pY0 + settings.intervalY;
 
             // Intervals between objects
-            let deltaX = settings.positions.intervalX;
-            let deltaY = settings.positions.intervalY;
-            
+            let deltaX = settings.intervalX;
+            let deltaY = settings.intervalY;
+
             deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
 
             // Extreme points: The maximum right or top values are among all previous objects
@@ -262,8 +263,8 @@ export default class GraphState extends EventTarget {
                 case ElementType.Transition: {
                     const critX = this.positions[objectNumber]?.center?.x ?? 0;
                     const critY = this.positions[objectNumber]?.center?.y ?? 0;
-                    
-                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX); 
+
+                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX);
                     const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
 
                     return new Point(X, Y);

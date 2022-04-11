@@ -41,9 +41,9 @@ function initKeyboardEvents() {
             return;
         }
         if (e.ctrlKey && e.key === "e") {
-          e.preventDefault();
-          exportConfig();
-          return;
+            e.preventDefault();
+            exportConfig();
+            return;
         }
     });
 }
@@ -67,7 +67,7 @@ function exportConfig() {
     link.download = file.name;
     link.href = URL.createObjectURL(file);
     link.click();
-    
+
     URL.revokeObjectURL(link.href);
 }
 

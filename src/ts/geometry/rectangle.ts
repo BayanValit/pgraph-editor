@@ -1,6 +1,6 @@
-import { default as Point } from "./point";
-import { default as Polygon } from "./polygon";
-import { default as Vector } from "./vector";
+import Point from "./point";
+import Polygon from "./polygon";
+import Vector from "./vector";
 
 export default class Rectangle extends Polygon {
 

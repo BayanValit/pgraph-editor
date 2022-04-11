@@ -1,2 +1,2 @@
-export * as matrix from '../math/matrix';
 export { default as graphStateDataFromJson } from './graphStateFromJson';
+export { default as formatMarkCount } from './formatText';

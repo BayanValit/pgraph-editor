@@ -3,11 +3,11 @@ export default function formatMarkCount(marks: number): string {
     const count = marks.toFixed();
     switch (true) {
         case marks >= 10 ** 8:
-            return 'Ꝏ';
+            return '∞';
         case marks >= 10 ** 6:
-            return digitClipper(marks / (10 ** 6)) + 'кк';
+            return digitClipper(marks / (10 ** 6)) + 'M';
         case marks >= 10 ** 3:
-            return digitClipper(marks / (10 ** 3)) + 'к';
+            return digitClipper(marks / (10 ** 3)) + 'K';
         default:
             return count; 
     }

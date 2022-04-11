@@ -1,6 +1,6 @@
-import { default as Settings } from './settings';
+import Settings from './settings';
 
-export const DEFAULT_SETTINGS: Settings = { 
+export const DEFAULT_SETTINGS: Settings = {
     debugMode: true,
     name: 'Untitled network',
     sizes: {
@@ -15,7 +15,7 @@ export const DEFAULT_SETTINGS: Settings = {
         paddingLeft: 100,
         paddingTop: 100,
         intervalX: 160,
-        intervalY: 180, 
+        intervalY: 180,
         arcMarginStart: 15,
         arcMarginEnd: 15,
         initMarks: 0,
@@ -23,14 +23,3 @@ export const DEFAULT_SETTINGS: Settings = {
 }
 
 export const DEBUG_PREFIX = 'pgraph-editor';
-
-export const SVG_RESOURSES = [
-    '/img/defs/marker.svg',
-    '/img/defs/marks/mark_0.svg',
-    '/img/defs/marks/mark_1.svg',
-    '/img/defs/marks/mark_2.svg',
-    '/img/defs/marks/mark_3.svg',
-    '/img/defs/marks/mark_4.svg',
-    '/img/defs/marks/mark_5.svg',
-    '/img/defs/marks/mark_custom.svg',
-];

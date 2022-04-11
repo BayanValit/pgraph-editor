@@ -1,10 +1,10 @@
 export default interface Settings {
     debugMode: boolean;
     name: string;
-    sizes: SizesSettings,
-    positions: PositionsSettings
+    sizes: SizesSettings;
+    positions: PositionsSettings;
 }
-interface SizesSettings {
+export interface SizesSettings {
     transitionWidth: number;
     transitionHeight: number;
     positionRadius: number;
@@ -13,7 +13,7 @@ interface SizesSettings {
     sizeArrow: number;
 }
 
-interface PositionsSettings {
+export interface PositionsSettings {
     paddingLeft: number;
     paddingTop: number;
     intervalX: number; // Optimal: positionRadius * 4
