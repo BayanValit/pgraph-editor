@@ -49,13 +49,6 @@ export default class GraphRender {
             }
         }
         this.viewCenter = { x: this.settings.sizes.viewportWidth / 2, y: this.settings.sizes.viewportHeight / 2 };
-        // Remove children
-        select(this.selector).selectChildren().remove();
-        // Create view 
-        this.view = select(this.selector)
-            .append("svg")
-            .attr("height", this.settings.sizes.viewportHeight)
-            .attr("width", this.settings.sizes.viewportWidth);
         // Init simulation
         this.simulation = forceSimulation().velocityDecay(0.25).stop();
         // Set state
@@ -64,7 +57,14 @@ export default class GraphRender {
 
     public render() {
         debug(this.state);
-
+        // Remove children
+        select(this.selector).selectChildren().remove();
+        // Create view 
+        this.view = select(this.selector)
+            .append("svg")
+            .attr("height", this.settings.sizes.viewportHeight)
+            .attr("width", this.settings.sizes.viewportWidth);
+        // Render
         this.loadSvgResourses();
         this.doAnimate(this.createObjects());
         this.doPhysics();
