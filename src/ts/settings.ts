@@ -3,6 +3,7 @@ export default interface Settings {
     name: string;
     sizes: SizesSettings;
     positions: PositionsSettings;
+    useStartingAnimation: boolean;
 }
 export interface SizesSettings {
     transitionWidth: number;

@@ -71,24 +71,29 @@ export default class GraphRender {
     }
 
     protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
-
         const links = this.view.selectAll(".arc")
             .data(this.state.arcs)
             .join((enter) => {
-                return enter.append("line")
+                const line = enter.append("line")
                     .attr("class", "arc")
                     .attr("marker-end", "url(#marker-end)")
                     .attr("marker-end", "url(#marker-end)")
-                    .attr("x1", this.viewCenter.x)
-                    .attr("x2", this.viewCenter.x)
-                    .attr("y1", this.viewCenter.y)
-                    .attr("y2", this.viewCenter.y);
+                if (this.settings.useStartingAnimation) {
+                    line
+                        .attr("x1", this.viewCenter.x)
+                        .attr("x2", this.viewCenter.x)
+                        .attr("y1", this.viewCenter.y)
+                        .attr("y2", this.viewCenter.y);
+                }
+                return line;
             });
-
         const positions = this.view.selectAll(".position")
             .data(this.state.positions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
+                if (!this.settings.useStartingAnimation) {
+                    node.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
+                }
                 node.append("circle")
                     .attr("class", "position")
                     .attr("r", (obj: Position) => obj.radius)
@@ -112,6 +117,9 @@ export default class GraphRender {
             .data(this.state.transitions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
+                if (!this.settings.useStartingAnimation) {
+                    node.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
+                }
                 node.append("rect")
                     .attr("class", "transition")
                     .attr("width", (obj: Transition) => obj.width)
@@ -127,7 +135,16 @@ export default class GraphRender {
                 .on("start", this.dragStartedNode.bind(this))
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
-
+        if (!this.settings.useStartingAnimation) {
+            links.each((link: Arc) => {
+                link.calcMargins();
+            })
+            .attr("x1", (d: Arc) => d.start.x)
+            .attr("x2", (d: Arc) => d.end.x)
+            .attr("y1", (d: Arc) => d.start.y)
+            .attr("y2", (d: Arc) => d.end.y);
+        }
+        
         return [positions, transitions, links];
     }
 
@@ -145,34 +162,42 @@ export default class GraphRender {
         const [positions, transitions, links] = objects;
 
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
-        positions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
-            .transition().on("start", function start() {
-                active(this).attr("transform", function (obj: Position) {
-                    return `translate(${obj.x},${obj.y})`;
+        if (this.settings.useStartingAnimation) {
+            positions
+                .attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
+                .transition()
+                .on("start", function start() {
+                    active(this).attr("transform", function (obj: Position) {
+                        return `translate(${obj.x},${obj.y})`;
+                    });
                 });
-            });
-        transitions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
-            .transition().on("start", function start() {
-                active(this).attr("transform", function (obj: Transition) {
-                    return `translate(${obj.x},${obj.y})`;
+            transitions
+                .attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
+                .transition()
+                .on("start", function start() {
+                    active(this).attr("transform", function (obj: Transition) {
+                        return `translate(${obj.x},${obj.y})`;
+                    });
                 });
-            });
-        links
-            .each((link: Arc) => {
-                link.calcMargins();
-            })
-            .transition()
-            .on("start", function start() {
-                active(this)
-                    .attr("x1", (d: Arc) => d.start.x)
-                    .attr("x2", (d: Arc) => d.end.x)
-                    .attr("y1", (d: Arc) => d.start.y)
-                    .attr("y2", (d: Arc) => d.end.y);
-            })
-            .transition()
-            .on("end", () => {
-                this.simulation.restart(); // First start force simulation
-            });
+    
+            links
+                .each((link: Arc) => {
+                    link.calcMargins();
+                })
+                .transition()
+                .on("start", function start() {
+                    active(this)
+                        .attr("x1", (d: Arc) => d.start.x)
+                        .attr("x2", (d: Arc) => d.end.x)
+                        .attr("y1", (d: Arc) => d.start.y)
+                        .attr("y2", (d: Arc) => d.end.y);
+                })
+                .transition()
+                .on("end", () => {
+                    this.simulation.restart(); // First start force simulation
+                });
+        }
+
 
         this.simulation.nodes(nodesData).on("tick", () => {
             links.each((link: Arc) => {

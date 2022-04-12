@@ -19,7 +19,8 @@ export const DEFAULT_SETTINGS: Settings = {
         arcMarginStart: 15,
         arcMarginEnd: 15,
         initMarks: 0,
-    }
+    },
+    useStartingAnimation: true,
 }
 
 export const DEBUG_PREFIX = 'pgraph-editor';
