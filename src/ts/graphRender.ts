@@ -39,6 +39,7 @@ export default class GraphRender {
         this.selector = selector;
         this.settings = {
             ...constants.DEFAULT_SETTINGS,
+            ...options.settings,
             sizes: {
                 ...constants.DEFAULT_SETTINGS.sizes,
                 ...(options.settings?.sizes ?? {})
@@ -46,7 +47,7 @@ export default class GraphRender {
             positions: {
                 ...constants.DEFAULT_SETTINGS.positions,
                 ...(options.settings?.positions ?? {})
-            }
+            },
         }
         this.viewCenter = { x: this.settings.sizes.viewportWidth / 2, y: this.settings.sizes.viewportHeight / 2 };
         // Init simulation
