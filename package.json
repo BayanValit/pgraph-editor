@@ -1,6 +1,6 @@
 {
   "name": "@bayanvalit/pgraph-editor",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "graph editor for Petry nets",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
