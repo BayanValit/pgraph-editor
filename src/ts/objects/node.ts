@@ -1,10 +1,10 @@
 import { SimulationNodeDatum } from 'd3-force';
-import { default as ObjectInterface } from './objectInterface';
-import { default as Point } from '../geometry/point';
-import { default as Arc } from './arc';
-import { default as Position } from './position';
-import { default as Transition } from './transition';
-import { default as Figure } from '../geometry/figure';
+import ObjectInterface from './objectInterface';
+import Point from '../geometry/point';
+import Arc from './arc';
+import Position from './position';
+import Transition from './transition';
+import Figure from '../geometry/figure';
 
 export default interface Node extends SimulationNodeDatum, ObjectInterface, Figure {
     index?: number | undefined;

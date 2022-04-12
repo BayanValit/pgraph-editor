@@ -1,9 +1,8 @@
-import { default as ObjectInterface } from './objects/objectInterface';
-import { default as Node } from './objects/node';
-import { default as Position } from './objects/position';
-import { default as Transition } from './objects/transition';
-import { default as Arc } from './objects/arc';
-import { default as Settings, DEFAULT_SETTINGS, DEBUG_PREFIX } from './settings';
+import ObjectInterface from './objects/objectInterface';
+import Node from './objects/node';
+import Position from './objects/position';
+import Transition from './objects/transition';
+import Arc from './objects/arc';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
@@ -11,8 +10,12 @@ import { active } from 'd3-transition';
 import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
 import complexCollide from './physics/collision';
+import formatMarkCount from './utils/formatText';
+import Settings from './settings';
+import * as resources from './resources/svg';
+import * as constants from './constants';
 
-const debug = createDebugger(DEBUG_PREFIX);
+const debug = createDebugger(constants.DEBUG_PREFIX);
 
 interface GraphRenderOptions {
     settings?: Partial<Settings>;
@@ -35,13 +38,13 @@ export default class GraphRender {
     constructor(selector: string, options: GraphRenderOptions) {
         this.selector = selector;
         this.settings = {
-            ...DEFAULT_SETTINGS,
+            ...constants.DEFAULT_SETTINGS,
             sizes: {
-                ...DEFAULT_SETTINGS.sizes,
+                ...constants.DEFAULT_SETTINGS.sizes,
                 ...(options.settings?.sizes ?? {})
             },
             positions: {
-                ...DEFAULT_SETTINGS.positions,
+                ...constants.DEFAULT_SETTINGS.positions,
                 ...(options.settings?.positions ?? {})
             }
         }
@@ -61,7 +64,8 @@ export default class GraphRender {
 
     public render() {
         debug(this.state);
-        this.createAdditional();
+
+        this.loadSvgResourses();
         this.doAnimate(this.createObjects());
         this.doPhysics();
     }
@@ -70,7 +74,7 @@ export default class GraphRender {
 
         const links = this.view.selectAll(".arc")
             .data(this.state.arcs)
-            .join((enter) => { 
+            .join((enter) => {
                 return enter.append("line")
                     .attr("class", "arc")
                     .attr("marker-end", "url(#marker-end)")
@@ -87,11 +91,17 @@ export default class GraphRender {
                 const node = enter.append("g").attr("class", "node");
                 node.append("circle")
                     .attr("class", "position")
-                    .attr("r", (obj: Position) => obj.radius);
+                    .attr("r", (obj: Position) => obj.radius)
+                    .attr("marks", (obj: Position) => obj.marks);
                 node.append("text")
                     .attr("class", "label")
-                    .attr("dy", ".4em")
+                    .attr("dy", "-2em")
                     .text((_obj: never, key: number) => "P" + (key + 1));
+                node.append("text")
+                    .attr("class", "custom-marks")
+                    .attr("dy", ".33em")
+                    .attr("symbols", (obj: Position) => formatMarkCount(obj.marks).length)
+                    .text((obj: Position) => formatMarkCount(obj.marks));
                 return node;
             }).call(drag<SVGCircleElement, never>()
                 .on("start", this.dragStartedNode.bind(this))
@@ -110,7 +120,7 @@ export default class GraphRender {
                         translate(${- obj.width / 2},${- obj.height / 2})`);
                 node.append("text")
                     .attr("class", "label")
-                    .attr("dy", ".35em")
+                    .attr("dy", ".33em")
                     .text((_obj: never, key: number) => "T" + (key + 1));
                 return node;
             }).call(drag<SVGRectElement, never>()
@@ -121,40 +131,32 @@ export default class GraphRender {
         return [positions, transitions, links];
     }
 
-    protected createAdditional(): void {
-        this.view.append("defs").selectAll("marker")
-            .data(["marker-end"])
-            .enter().append("svg:marker")
-                .attr("id", String)
-                .attr("viewBox", "-5 -5 10 10")
-                .attr("refX", 0)
-                .attr("refY", 0)
-                .attr("markerWidth", this.settings.sizes.sizeArrow)
-                .attr("markerHeight", this.settings.sizes.sizeArrow)
-                .attr("orient", "auto")
-                .append("svg:path")
-                    .attr("class", "arc-end")
-                    .attr("d", "M-5,-5 L5,0 L-5,5");
+    protected loadSvgResourses(): void {
+        const defs = this.view.append("defs");
+
+        for (const key in resources.DEFS) {
+            defs.append("svg").html(resources.DEFS[key]);
+        }
     }
 
     protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
 
         const nodesData = [...this.state.positions, ...this.state.transitions];
-        const [ positions, transitions, links ] = objects;
-        
+        const [positions, transitions, links] = objects;
+
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
         positions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                active(this).attr("transform", function(obj: Position) {
+                active(this).attr("transform", function (obj: Position) {
                     return `translate(${obj.x},${obj.y})`;
                 });
-        });
+            });
         transitions.attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
             .transition().on("start", function start() {
-                active(this).attr("transform", function(obj: Transition) {
+                active(this).attr("transform", function (obj: Transition) {
                     return `translate(${obj.x},${obj.y})`;
                 });
-        });
+            });
         links
             .each((link: Arc) => {
                 link.calcMargins();
@@ -176,7 +178,7 @@ export default class GraphRender {
             links.each((link: Arc) => {
                 link.calcMargins();
             });
-            
+
             links
                 .attr("x1", (d: Arc) => d.start.x)
                 .attr("x2", (d: Arc) => d.end.x)

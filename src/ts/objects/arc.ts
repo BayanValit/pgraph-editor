@@ -1,9 +1,9 @@
 import { SimulationLinkDatum, SimulationNodeDatum } from 'd3';
-import { default as Point } from '../geometry/point';
-import { default as ObjectInterface } from './objectInterface';
-import { default as Node } from './node';
-import { default as Path } from '../geometry/path';
-import { default as Line } from '../geometry/line';
+import Point from '../geometry/point';
+import ObjectInterface from './objectInterface';
+import Node from './node';
+import Path from '../geometry/path';
+import Line from '../geometry/line';
 
 export default class Arc extends Path implements SimulationLinkDatum<SimulationNodeDatum>, ObjectInterface {
 

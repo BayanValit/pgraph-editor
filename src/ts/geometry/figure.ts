@@ -1,4 +1,4 @@
-import { default as Point } from "./point";
+import Point from "./point";
 
 export default abstract class Figure {
 

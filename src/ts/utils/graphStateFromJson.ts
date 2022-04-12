@@ -1,49 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEFAULT_SETTINGS } from "../settings";
+import { DEFAULT_SETTINGS } from "../constants";
 import { GraphStateData, ConfigType } from "../graphState";
-import { isValidMatrix } from "./matrix";
-
-function autofix(data: any) {
-    data.type ??= ConfigType.Default;
-    if (data.type == ConfigType.Inhibitory) {
-        data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));
-    }
-
-    if (!Array.isArray(data.markup)) {
-        data.markup = [];
-    }
-
-    return data;
-}
-
-function assertIsValid(data: any): void | never {
-    if (!Object.values(ConfigType).includes(data.type)) {
-        throw new TypeError("Invalid type net: " + data["type"]);
-    }
-
-    if (!isValidMatrix(data.matrices.FP)) {
-        throw new TypeError("Invalid FP matrix");
-    }
-
-    if (!isValidMatrix(data.matrices.FT)) {
-        throw new TypeError("Invalid FT matrix");
-    }
-
-    if (data.type === ConfigType.Inhibitory) {
-        if (!isValidMatrix(data.matrices.FI)) {
-            throw new TypeError("Invalid FI matrix");
-        }
-        if (data.matrices.FI.length !== data.matrices.FP.length) {
-            throw new TypeError("FI and FP matrices dismatch");
-        }
-    }
-}
+import NumberList from "../math/numberList";
+import Matrix from "../math/matrix";
 
 export default function graphStateDataFromJson(serialized: string): GraphStateData {
     const data = autofix(JSON.parse(serialized));
     assertIsValid(data);
     const {
-        name = DEFAULT_SETTINGS.name,
+        name,
         type,
         markup,
         matrices,
@@ -60,4 +25,62 @@ export default function graphStateDataFromJson(serialized: string): GraphStateDa
         transitions,
         arcs,
     };
+}
+
+function autofix(data: any) {
+    data.name ??= DEFAULT_SETTINGS.name;
+    data.type ??= ConfigType.Default;
+    if (data.type == ConfigType.Inhibitory) {
+        data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));
+    }
+
+    if (!Array.isArray(data.markup)) {
+        data.markup = [];
+    }
+    return data;
+}
+
+function assertIsValid(data: any): void | never {
+    if (!Object.values(ConfigType).includes(data.type)) {
+        throw new TypeError("Invalid type net: " + data["type"]);
+    }
+    assertMatricesValid(data);
+
+    if (new NumberList(data.markup).hasNegative()) {
+        throw new TypeError(`The markup has negative value`);
+    }
+}
+
+function assertMatricesValid(data: any): void | never {
+    const matrices = {
+        FP: new Matrix(data.matrices.FP),
+        FT: new Matrix(data.matrices.FT),
+    };
+
+    if (data.type === ConfigType.Inhibitory) {
+        matrices['FI'] = new Matrix(data.matrices.FI);
+    }
+
+    for (const key in matrices) {
+        if (!matrices[key].isMatrix()) {
+            throw new TypeError(`Invalid ${key} matrix`);
+        }
+        if (matrices[key].hasNegativeValue()) {
+            throw new TypeError(`Matrix ${key} has negative value`);
+        }
+    }
+
+    /* TODO: Улучшение валидации конфигурации - не применять правила ниже, если нет конфликта между матрицами
+     *
+     * Конфликт возникает, если дуга существует, но не заданы объекты для этой дуги.
+     * Решение этой проблемы позволит сохранять конфигурацию, при которой существуют только позиции,
+     * либо только переходы, также задействует автоисправление при несовместимых матрицах.
+     */
+    if (!matrices.FP.сompareColsWithRows(matrices.FT)) {
+        throw new TypeError("FP and FT matrices dismatch");
+    }
+
+    if (data.type === ConfigType.Inhibitory && !matrices.FP.сompareRowsWithRows(matrices['FI'])) {
+        throw new TypeError("FI and FP matrices dismatch");
+    }
 }
