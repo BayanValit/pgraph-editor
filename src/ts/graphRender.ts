@@ -3,12 +3,12 @@ import { default as Node } from './objects/node';
 import { default as Position } from './objects/position';
 import { default as Transition } from './objects/transition';
 import { default as Arc } from './objects/arc';
-import { default as Settings, DEFAULT_SETTINGS, DEBUG_PREFIX } from './_settings';
+import { default as Settings, DEFAULT_SETTINGS, DEBUG_PREFIX } from './settings';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { active } from 'd3-transition';
-import GraphState, { GraphStateEventType } from './_graphState';
+import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
 import complexCollide from './physics/collision';
 
