@@ -1,0 +1,52 @@
+@import "./main";
+@import "./control-panel";
+@import "./debug-panel";
+
+/**
+ * Fonts
+ */
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_DemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Golos";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../fonts/Golos_Text_Bold.ttf") format("truetype");
+}
+
+body {
+  font-family: "Golos", "Calibri Light", "system-ui";
+  font-weight: 600;
+  font-size: larger;
+
+  #name {
+    font-size: 1em;
+  }
+}
+
+.container {
+  display: flex;
+}

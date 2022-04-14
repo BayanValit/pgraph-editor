@@ -1,15 +1,15 @@
-import { default as Arc } from './objects/arc';
-import { default as Point } from './geometry/point';
-import { default as Position } from './objects/position';
-import { default as Transition } from './objects/transition';
-import { default as ObjectInterface } from './objects/objectInterface';
+import Arc from './objects/arc';
+import Point from './geometry/point';
+import Position from './objects/position';
+import Transition from './objects/transition';
+import ObjectInterface from './objects/objectInterface';
+import Matrix from './math/matrix';
 import { PositionsSettings } from './settings';
-import { Matrix } from './utils/matrix';
-import { DEFAULT_SETTINGS } from './settings';
+import { DEFAULT_SETTINGS } from './constants';
 
 enum ElementType {
-    Position = "P" ,
-    Transition = "T" ,
+    Position = "P",
+    Transition = "T",
     Arc = "A"
 }
 
@@ -17,7 +17,6 @@ export enum ConfigType {
     Default = 'default',
     Inhibitory = 'inhibitory'
 }
-
 
 type PositionData = { center: Point };
 
@@ -58,14 +57,17 @@ export default class GraphState extends EventTarget {
     public transitions: Array<Transition> = [];
     public arcs: Array<Arc> = [];
 
-    constructor(args: GraphStateConstructorParams, positions: PositionsSettings = DEFAULT_SETTINGS.positions) {
+    constructor(args: GraphStateConstructorParams, settings: PositionsSettings = DEFAULT_SETTINGS.positions) {
+        // @TODO: this should be implemented as strategy pattern 
+        // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
+
         super();
         this.name = args.name;
         this.type = args.type;
         this.positions = args.positions;
         this.transitions = args.transitions;
         this.arcs = args.arcs;
-        this.setCenters(positions);
+        this.setCenters(settings);
     }
 
     public static create(data: GraphStateData, positionsSettings: PositionsSettings = DEFAULT_SETTINGS.positions) {
@@ -139,30 +141,28 @@ export default class GraphState extends EventTarget {
         }, positionsSettings);
     }
 
-    protected setCenters(positions: PositionsSettings) {
+    protected setCenters(settings: PositionsSettings) {
         const n = Math.max(this.positions.length, this.transitions.length);
         for (let i = 0; i < n; i += 1) {
             if (this.positions[i] && this.positions[i].center === undefined) {
-                this.positions[i].center = this.getOptimalPosition(ElementType.Position, i, positions);
+                this.positions[i].center = this.getOptimalPosition(ElementType.Position, i, settings);
             }
             if (this.transitions[i] && this.transitions[i].center === undefined) {
-                this.transitions[i].center = this.getOptimalPosition(ElementType.Transition, i, positions);
+                this.transitions[i].center = this.getOptimalPosition(ElementType.Transition, i, settings);
             }
         }
     }
 
     public getData(): GraphStateData {
-        const matrixCreator = (rows: number, cols: number): Matrix => new Array(rows).fill(undefined).map(() => new Array(cols).fill(0));
-
-        const FP = matrixCreator(this.positions.length, this.transitions.length);
-        const FT = matrixCreator(this.transitions.length, this.positions.length);
-        const FI = matrixCreator(this.positions.length, this.transitions.length);
+        const FP = Matrix.createMatrix(this.positions.length, this.transitions.length);
+        const FT = Matrix.createMatrix(this.transitions.length, this.positions.length);
+        const FI = Matrix.createMatrix(this.positions.length, this.transitions.length);
         const markup: number[] = [];
 
         const positions: PositionData[] = [];
         const transitions: TransitionData[] = [];
         const arcs: ArcData[] = [];
-        
+
         this.positions.forEach((position, row) => {
             position.target.forEach(arc => {
                 const col = this.transitions.indexOf(arc.target as Transition);
@@ -217,27 +217,25 @@ export default class GraphState extends EventTarget {
         return JSON.stringify(this.getData(), null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, this.formatReplacer);
     }
 
-    // TODO: this should be implemented as strategy pattern 
-    // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
     public getOptimalPosition(
         graphType: ElementType,
         objectNumber: number,
-        positions: PositionsSettings
+        settings: PositionsSettings
     ): Point {
         if (graphType == ElementType.Position || graphType == ElementType.Transition) {
 
             // Indentation for the first position...
-            const pX0 = positions.paddingLeft;
-            const pY0 = positions.paddingTop;
+            const pX0 = settings.paddingLeft;
+            const pY0 = settings.paddingTop;
 
             // ...and for the first transition
             const tX0 = pX0;
-            const tY0 = pY0 + positions.intervalY;
+            const tY0 = pY0 + settings.intervalY;
 
             // Intervals between objects
-            let deltaX = positions.intervalX;
-            let deltaY = positions.intervalY;
-            
+            let deltaX = settings.intervalX;
+            let deltaY = settings.intervalY;
+
             deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
 
             // Extreme points: The maximum right or top values are among all previous objects
@@ -265,8 +263,8 @@ export default class GraphState extends EventTarget {
                 case ElementType.Transition: {
                     const critX = this.positions[objectNumber]?.center?.x ?? 0;
                     const critY = this.positions[objectNumber]?.center?.y ?? 0;
-                    
-                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX); 
+
+                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX);
                     const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
 
                     return new Point(X, Y);

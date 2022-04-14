@@ -1,5 +1,5 @@
-import { default as Line } from "./line";
-import { default as Point } from "./point";
+import Line from "./line";
+import Point from "./point";
 
 export default class Vector {
 

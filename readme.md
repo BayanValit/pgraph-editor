@@ -1,14 +1,19 @@
-# PGraph editor
+<div align="center">
+    <img src="./src/favicon.ico" alt="PGraph editor" />
+    <h2>PGraph editor</h2>
+    <p>Component of the graphical editor of the Petri net</p>
+    <hr>
+</div>
 
-Component of the graphical editor of the Petri net
 
-## Development
 
-1. Expand the project in your web server folder and run:
+## Развертывание
+
+1. Выполнить следующие команды:
 - `npm install`
 - `npm start`
 
-2. Run in separate cmd `npm run serve` - it will serve application at http://localhost:8080
+2. Запустить в отдельном cmd `npm run serve` - приложение будет развернуто на http://localhost:8080
 
 ## Публикация в github npm registry
 
@@ -37,7 +42,7 @@ Component of the graphical editor of the Petri net
 3. Для включения отладки в консоли браузера прописать:
 
 ```js
-// выводить сообщения из всех модулей
+// Выводить сообщения из всех модулей
 localStorage.debug = 'pgraph-editor:*'
 ```
 

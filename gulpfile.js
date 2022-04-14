@@ -7,7 +7,6 @@ const gulp = require('gulp'),
     tsProject = typescript.createProject('tsconfig.json'),
     exec = require('child_process').exec;
 
-
 var path = {
     build: {
         html: 'build/',
@@ -21,7 +20,7 @@ var path = {
         html: 'src/*.html',
         examples: 'src/examples/**/*.jsonc',
         ts: 'src/ts/**/*.ts',
-        style: 'src/sass/**/*.scss',
+        style: 'src/sass/index.scss',
         img: 'src/img/**/*.*',
         fonts: 'src/fonts/**/*.*'
     },

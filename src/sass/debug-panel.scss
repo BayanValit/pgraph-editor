@@ -1,0 +1,44 @@
+#debugPanel {
+  display: none;
+  flex: auto;
+  flex-direction: column;
+  width: 600px;
+  height: 600px;
+
+  .debugMenu {
+    font: normal 400 medium "Golos";
+
+    button {
+      padding: 5px;
+      width: 150px;
+      color: white;
+      border-radius: 5px;
+      font: inherit;
+      font-size: 0.8em;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      &#importButton {
+        background-color: darkorange;
+      }
+
+      &#exportButton {
+        background-color: green;
+      }
+    }
+
+    label {
+      padding: 5px;
+      color: black;
+      width: 120px;
+      display: inline-flex;
+      justify-content: center;
+    }
+  }
+
+  #configEditor {
+    flex: auto;
+  }
+}

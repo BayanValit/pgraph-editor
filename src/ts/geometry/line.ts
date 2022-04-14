@@ -1,8 +1,8 @@
-import { default as Circle } from "./circle";
-import { default as Figure } from "./figure";
-import { default as Point } from "./point";
-import { default as Rectangle } from "./rectangle";
-import { default as Vector } from "./vector";
+import Circle from "./circle";
+import Figure from "./figure";
+import Point from "./point";
+import Rectangle from "./rectangle";
+import Vector from "./vector";
 import { toRadians } from "./converter";
 
 export default class Line {

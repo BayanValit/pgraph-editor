@@ -1,7 +1,7 @@
-import { default as Figure } from "./figure";
-import { default as Line } from "./line";
-import { default as Point } from "./point";
-import { default as Vector } from "./vector";
+import Figure from "./figure";
+import Line from "./line";
+import Point from "./point";
+import Vector from "./vector";
 
 export default class Circle extends Figure {
 

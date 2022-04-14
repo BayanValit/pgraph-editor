@@ -1,8 +1,8 @@
-import { default as Point } from '../geometry/point';
-import { default as Node } from './node';
-import { default as Arc } from './arc';
-import { default as Rectangle } from '../geometry/rectangle';
-import { DEFAULT_SETTINGS } from '../settings';
+import Point from '../geometry/point';
+import Node from './node';
+import Arc from './arc';
+import Rectangle from '../geometry/rectangle';
+import { DEFAULT_SETTINGS } from '../constants';
 
 export default class Transition extends Rectangle implements Node {
 
