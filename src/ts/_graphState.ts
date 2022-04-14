@@ -3,9 +3,9 @@ import { default as Point } from './geometry/point';
 import { default as Position } from './objects/position';
 import { default as Transition } from './objects/transition';
 import { default as ObjectInterface } from './objects/objectInterface';
-import { PositionsSettings } from './settings';
+import { PositionsSettings } from './_settings';
 import { Matrix } from './utils/matrix';
-import { DEFAULT_SETTINGS } from './settings';
+import { DEFAULT_SETTINGS } from './_settings';
 
 enum ElementType {
     Position = "P" ,
