@@ -1,8 +1,8 @@
-import ObjectInterface from './objects/objectInterface';
-import Node from './objects/node';
+import ObjectInterface from './objects/abstract/objectInterface';
+import Node from './objects/abstract/node';
 import Position from './objects/position';
 import Transition from './objects/transition';
-import Arc from './objects/arc';
+import Arc from './objects/oneWayArc';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
@@ -40,16 +40,16 @@ export default class GraphRender {
         this.settings = {
             ...constants.DEFAULT_SETTINGS,
             ...options.settings,
-            sizes: {
-                ...constants.DEFAULT_SETTINGS.sizes,
-                ...(options.settings?.sizes ?? {})
+            object: {
+                ...constants.DEFAULT_SETTINGS.object,
+                ...(options.settings?.object ?? {})
             },
-            positions: {
-                ...constants.DEFAULT_SETTINGS.positions,
-                ...(options.settings?.positions ?? {})
+            layout: {
+                ...constants.DEFAULT_SETTINGS.layout,
+                ...(options.settings?.layout ?? {})
             },
         }
-        this.viewCenter = { x: this.settings.sizes.viewportWidth / 2, y: this.settings.sizes.viewportHeight / 2 };
+        this.viewCenter = { x: this.settings.layout.viewportWidth / 2, y: this.settings.layout.viewportHeight / 2 };
         // Init simulation
         this.simulation = forceSimulation().velocityDecay(0.25).stop();
         // Set state
@@ -63,8 +63,8 @@ export default class GraphRender {
         // Create view 
         this.view = select(this.selector)
             .append("svg")
-            .attr("height", this.settings.sizes.viewportHeight)
-            .attr("width", this.settings.sizes.viewportWidth);
+            .attr("height", this.settings.layout.viewportHeight)
+            .attr("width", this.settings.layout.viewportWidth);
         // Render
         this.loadSvgResourses();
         this.doAnimate(this.createObjects());
@@ -73,13 +73,13 @@ export default class GraphRender {
 
     protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
         const links = this.view.selectAll(".arc")
-            .data(this.state.arcs)
+            .data(this.state.collection.arcs)
             .join((enter) => {
                 const line = enter.append("line")
                     .attr("class", "arc")
                     .attr("marker-end", "url(#marker-end)")
                     .attr("marker-end", "url(#marker-end)")
-                if (this.settings.useStartingAnimation) {
+                if (this.settings.animation.useStart) {
                     line
                         .attr("x1", this.viewCenter.x)
                         .attr("x2", this.viewCenter.x)
@@ -89,10 +89,10 @@ export default class GraphRender {
                 return line;
             });
         const positions = this.view.selectAll(".position")
-            .data(this.state.positions)
+            .data(this.state.collection.positions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
-                if (!this.settings.useStartingAnimation) {
+                if (!this.settings.animation.useStart) {
                     node.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
                 }
                 node.append("circle")
@@ -115,10 +115,10 @@ export default class GraphRender {
                 .on("end", this.dragEndedNode.bind(this)));
 
         const transitions = this.view.selectAll(".transition")
-            .data(this.state.transitions)
+            .data(this.state.collection.transitions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
-                if (!this.settings.useStartingAnimation) {
+                if (!this.settings.animation.useStart) {
                     node.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
                 }
                 node.append("rect")
@@ -136,7 +136,7 @@ export default class GraphRender {
                 .on("start", this.dragStartedNode.bind(this))
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
-        if (!this.settings.useStartingAnimation) {
+        if (!this.settings.animation.useStart) {
             links.each((link: Arc) => {
                 link.calcMargins();
             })
@@ -159,11 +159,11 @@ export default class GraphRender {
 
     protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
 
-        const nodesData = [...this.state.positions, ...this.state.transitions];
+        const nodesData = [...this.state.collection.positions, ...this.state.collection.transitions];
         const [positions, transitions, links] = objects;
 
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
-        if (this.settings.useStartingAnimation) {
+        if (this.settings.animation.useStart) {
             positions
                 .attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
                 .transition()
@@ -221,9 +221,9 @@ export default class GraphRender {
          * TODO: ADD center and border force, something like:
          * this.simulation.force("center", d3.forceCenter(this.viewCenter.x, this.viewCenter.y));
          */
-        this.simulation.force("link", forceLink(this.state.arcs).strength(0));
+        this.simulation.force("link", forceLink(this.state.collection.arcs).strength(0));
         this.simulation.force("collide", complexCollide(
-            this.settings.sizes.positionRadius, [this.settings.sizes.transitionWidth, this.settings.sizes.transitionHeight])
+            this.settings.object.positionRadius, [this.settings.object.transitionWidth, this.settings.object.transitionHeight])
         );
         // this.simulation.force("charge", d3.forceManyBody().distanceMin(100).strength(500));
     }

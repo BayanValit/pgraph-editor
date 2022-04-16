@@ -1,2 +1,2 @@
-export { default as graphStateDataFromJson } from './graphStateFromJson';
+export { parseFromJson, serializeToJson } from './jsonGraphState';
 export { default as formatMarkCount } from './formatText';

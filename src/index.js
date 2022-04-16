@@ -1,9 +1,7 @@
 /* global fetch document File URL window console */
 
-import {
-    GraphState, GraphRender
-} from '../lib/index';
-import graphStateDataFromJson from '../lib/utils/graphStateFromJson';
+import { GraphState, GraphRender } from '../lib/index';
+import { parseFromJson, serializeToJson }from '../lib/utils/jsonGraphState';
 
 const graph = {
     state: undefined,
@@ -15,7 +13,7 @@ function fetchGraphState() {
         .then((res) => res.text())
         .then((serialized) => {
             document.querySelector('#configEditor').innerHTML = serialized;
-            return graphStateDataFromJson(serialized)
+            return parseFromJson(serialized)
         })
         .then((graphStateData) => GraphState.create(graphStateData))
 }
@@ -52,11 +50,11 @@ function importAndRedraw() {
     const configJson = document.querySelector("#configEditor").value;
     // TODO: Describe the logic of error output in a separate class
     document.querySelector('.debugMenu span').innerHTML = '❌';
-    update(GraphState.create(graphStateDataFromJson(configJson)));
+    update(GraphState.create(parseFromJson(configJson)));
 }
 
 function exportConfig() {
-    const configJson = graph.state.serialize();
+    const configJson = serializeToJson(graph.state.getData());
     document.querySelector("#configEditor").value = configJson;
 
     const link = document.createElement("a");

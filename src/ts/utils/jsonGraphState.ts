@@ -1,10 +1,41 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEFAULT_SETTINGS } from "../constants";
-import { GraphStateData, ConfigType } from "../graphState";
+import { ConfigType, DEFAULT_SETTINGS } from "../constants";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
+import Point from "../geometry/point";
 
-export default function graphStateDataFromJson(serialized: string): GraphStateData {
+type PositionData   = { center: Point };
+type TransitionData = { center: Point, rotate: number };
+type ArcData        = { binding: string; anchors: Point[] };
+
+export type GraphStateData = {
+    name: string;
+    type: ConfigType;
+    markup: number[];
+    matrices: {
+        FP: Matrix;
+        FT: Matrix;
+        FI?: Matrix;
+    },
+    positions  : Array<PositionData>;
+    transitions: Array<TransitionData>;
+    arcs       : Array<ArcData>;
+}
+
+export function serializeToJson(data: GraphStateData): string {
+    return JSON.stringify(data, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, formatReplacer);
+}
+
+/**
+ * Correction of ugly output of numeric arrays via JSON.stringify
+ * @param match // multi-line for formatting
+ * @return string
+ */
+function formatReplacer(match: string): string {
+    return match.replace(/\s+/gs, "").replaceAll(",", ", ");
+}
+
+export function parseFromJson(serialized: string): GraphStateData {
     const data = autofix(JSON.parse(serialized));
     assertIsValid(data);
     const {
@@ -34,9 +65,13 @@ function autofix(data: any) {
         data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));
     }
 
-    if (!Array.isArray(data.markup)) {
-        data.markup = [];
-    }
+    const setArray = (array: Array<any>) => Array.isArray(array) ? array : [];
+
+    data.markup      = setArray(data.markup);
+    data.positions   = setArray(data.positions);
+    data.transitions = setArray(data.transitions);
+    data.arcs        = setArray(data.arcs);
+
     return data;
 }
 

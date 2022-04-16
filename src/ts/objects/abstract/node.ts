@@ -1,12 +1,12 @@
 import { SimulationNodeDatum } from 'd3-force';
 import ObjectInterface from './objectInterface';
-import Point from '../geometry/point';
-import Arc from './arc';
-import Position from './position';
-import Transition from './transition';
-import Figure from '../geometry/figure';
+import Arc from '../abstract/arc';
+import Figure from '../../geometry/figure';
 
-export default interface Node extends SimulationNodeDatum, ObjectInterface, Figure {
+export default interface Node extends Figure, SimulationNodeDatum, ObjectInterface {
+
+    readonly nodeType: NodeType;
+
     index?: number | undefined;
     vx?: number | undefined;
     vy?: number | undefined;
@@ -15,8 +15,13 @@ export default interface Node extends SimulationNodeDatum, ObjectInterface, Figu
     x?: number | undefined;
     y?: number | undefined;
 
-    center: Point;
+    displayIndex: number;
+
     source: Array<Arc>;
     target: Array<Arc>;
-    type: typeof Position | typeof Transition;
+}
+
+export enum NodeType {
+    Position = "P",
+    Transition = "T"
 }
