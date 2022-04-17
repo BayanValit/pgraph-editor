@@ -23,7 +23,7 @@ function update(state) {
     graph.state = state;
     graph.renderer = new GraphRender('#viewport', { state })
     graph.renderer.render();
-    graph.state.addEventListener('changed', () => console.log(graph.state.getData()));
+    graph.state.addEventListener('changed', () => console.log(graph.state));
 }
 
 function initMouseEvents() {

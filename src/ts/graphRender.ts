@@ -59,7 +59,7 @@ export default class GraphRender {
 
     public render() {
         debug(this.state);
-        // Remove children
+        // Remove old objects
         select(this.selector).selectChildren().remove();
         // Create view 
         this.view = select(this.selector)
@@ -73,19 +73,17 @@ export default class GraphRender {
     }
 
     protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
+
         const links = this.view.selectAll(".arc")
             .data(this.state.collection.arcs)
             .join((enter) => {
-                const line = enter.append("line")
+                const line = enter.append("path")
+                    .attr('d', (obj: Arc) => obj.getPath())
                     .attr("class", "arc")
                     .attr("marker-end", "url(#marker-standart)")
-                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
+                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null);
                 if (this.settings.animation.useStart) {
-                    line
-                        .attr("x1", this.viewCenter.x)
-                        .attr("x2", this.viewCenter.x)
-                        .attr("y1", this.viewCenter.y)
-                        .attr("y2", this.viewCenter.y);
+                    line.attr('d', (obj: Arc) => obj.getPath());
                 }
                 return line;
             });
@@ -139,12 +137,12 @@ export default class GraphRender {
                 .on("end", this.dragEndedNode.bind(this)));
         if (!this.settings.animation.useStart) {
             links.each((link: Arc) => {
-                link.calcMargins();
+                link.updateMargins();
             })
-            .attr("x1", (d: Arc) => d.start.x)
-            .attr("x2", (d: Arc) => d.end.x)
-            .attr("y1", (d: Arc) => d.start.y)
-            .attr("y2", (d: Arc) => d.end.y);
+            .attr('d', (obj: Arc) => obj.getPath())
+            .classed("hide-start", (d: Arc) => d.startReversed)
+            .classed("hide-end", (d: Arc) => d.endReversed)
+            .classed("hidden", (d: Arc) => d.hidden);
         }
         
         return [positions, transitions, links];
@@ -184,16 +182,16 @@ export default class GraphRender {
     
             links
                 .each((link: Arc) => {
-                    link.calcMargins();
+                    link.updateMargins();
                 })
+                .classed("hide-start", (d: Arc) => d.startReversed)
+                .classed("hide-end", (d: Arc) => d.endReversed)
+                .classed("hidden", (d: Arc) => d.hidden)
                 .transition()
                 .on("start", function start() {
                     active(this)
-                        .attr("x1", (d: Arc) => d.start.x)
-                        .attr("x2", (d: Arc) => d.end.x)
-                        .attr("y1", (d: Arc) => d.start.y)
-                        .attr("y2", (d: Arc) => d.end.y)
-                        .attr("class", (d: Arc) => d.hidden ? "hidden" : "arc");
+                        .attr('d', (obj: Arc) => obj.getPath());
+
                 })
                 .transition()
                 .on("end", () => {
@@ -204,18 +202,13 @@ export default class GraphRender {
 
         this.simulation.nodes(nodesData).on("tick", () => {
             links.each((link: Arc) => {
-                link.calcMargins();
-                // if (link.getSerial() == 'P2-T1') {
-                //     console.log(link.getVector().getVectorLength());
-                // }
+                link.updateMargins();
             });
 
-            links
-                .attr("x1", (d: Arc) => d.start.x)
-                .attr("x2", (d: Arc) => d.end.x)
-                .attr("y1", (d: Arc) => d.start.y)
-                .attr("y2", (d: Arc) => d.end.y)
-                .attr("class", (d: Arc) => d.hidden ? "hidden" : "arc");
+            links.attr('d', (obj: Arc) => obj.getPath())
+                .classed("hide-start", (d: Arc) => d.startReversed)
+                .classed("hide-end", (d: Arc) => d.endReversed)
+                .classed("hidden", (d: Arc) => d.hidden);
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);

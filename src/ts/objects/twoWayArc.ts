@@ -5,6 +5,9 @@ import Arc from './abstract/arc';
 export default class TwoWayArc extends Arc {
 
     public readonly hasInhibitory = false;
+    public readonly linkSymbol = '⮂';
+    public readonly hideAtLength = 12; // TODO: move to setting
+
 
     constructor(
         source: Node,
@@ -19,9 +22,5 @@ export default class TwoWayArc extends Arc {
             false,
             anchors
         );
-    }
-
-    protected hideSmall(): void {
-        this.hidden = this.isReversed || this.getVector().getVectorLength() < 10; 
     }
 }

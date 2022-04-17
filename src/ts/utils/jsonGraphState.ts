@@ -6,7 +6,7 @@ import Point from "../geometry/point";
 
 type PositionData   = { center: Point };
 type TransitionData = { center: Point, rotate: number };
-type ArcData        = { binding: string, anchors: Point[] };
+type ArcData        = { binding: string, anchors: Array<{ x: number, y: number }> };
 
 export type GraphStateData = {
     name: string;
@@ -23,7 +23,7 @@ export type GraphStateData = {
 }
 
 export function serializeToJson(data: GraphStateData): string {
-    return JSON.stringify(data, null, 2).replace(/\n(\s+\d,?\n)+\s*/gs, formatReplacer);
+    return JSON.stringify(data, null, 2).replace(/\n(\s+\d+,?\n)+\s*/gs, formatReplacer);
 }
 
 /**

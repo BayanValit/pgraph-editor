@@ -115,6 +115,15 @@ svg {
   stroke: $arc-color;
   stroke-width: 2px;
   stroke-opacity: 0.8;
+  fill: none;
+
+  &.hide-start {
+    marker-start: none;
+  }
+
+  &.hide-end {
+    marker-end: none;
+  }
 }
 
 .arc-end {

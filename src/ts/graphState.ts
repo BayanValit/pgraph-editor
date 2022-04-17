@@ -9,6 +9,7 @@ import { GraphStateData } from './utils/jsonGraphState';
 import TwoFrontAlgorithm from './layout/algorithms/twoFrontAlgorithm';
 import OneWayArc from './objects/oneWayArc';
 import TwoWayArc from './objects/twoWayArc';
+import Point from './geometry/point';
 
 export type CollectionData = { 
     positions: Array<Position>,
@@ -70,7 +71,7 @@ export default class GraphState extends EventTarget {
                                 nodeFrom[row],
                                 nodeTo[col],
                                 cell,
-                                matrix(nodeTo)[row][col]
+                                matrix(nodeTo)[row][col],
                             );
                             matrix(nodeTo)[row][col] = 0;
                         } else {
@@ -78,10 +79,12 @@ export default class GraphState extends EventTarget {
                                 nodeFrom[row],
                                 nodeTo[col],
                                 cell,
-                                canBeInhibitory && Boolean(FI[row][col])
+                                canBeInhibitory && Boolean(FI[row][col]),
                             );
                         }
-                        arc.anchors = data.arcs?.find((x) => x.binding == arc.getSerial())?.anchors;
+                        const anchors = data.arcs?.find((x) => x.binding == arc.getSerial())?.anchors;
+
+                        arc.anchors = anchors ? anchors.map((anchor) => (new Point(anchor.x, anchor.y))) : [];
     
                         nodeFrom[row].target.push(arc);
                         nodeTo[col].source.push(arc);
