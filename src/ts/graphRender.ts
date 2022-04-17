@@ -14,6 +14,7 @@ import formatMarkCount from './utils/formatText';
 import Settings from './settings';
 import * as resources from './resources/svg';
 import * as constants from './constants';
+import TwoWayArc from './objects/twoWayArc';
 
 const debug = createDebugger(constants.DEBUG_PREFIX);
 
@@ -77,8 +78,8 @@ export default class GraphRender {
             .join((enter) => {
                 const line = enter.append("line")
                     .attr("class", "arc")
-                    .attr("marker-end", "url(#marker-end)")
-                    .attr("marker-end", "url(#marker-end)")
+                    .attr("marker-end", "url(#marker-standart)")
+                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
                 if (this.settings.animation.useStart) {
                     line
                         .attr("x1", this.viewCenter.x)
@@ -191,7 +192,8 @@ export default class GraphRender {
                         .attr("x1", (d: Arc) => d.start.x)
                         .attr("x2", (d: Arc) => d.end.x)
                         .attr("y1", (d: Arc) => d.start.y)
-                        .attr("y2", (d: Arc) => d.end.y);
+                        .attr("y2", (d: Arc) => d.end.y)
+                        .attr("class", (d: Arc) => d.hidden ? "hidden" : "arc");
                 })
                 .transition()
                 .on("end", () => {
@@ -203,13 +205,17 @@ export default class GraphRender {
         this.simulation.nodes(nodesData).on("tick", () => {
             links.each((link: Arc) => {
                 link.calcMargins();
+                // if (link.getSerial() == 'P2-T1') {
+                //     console.log(link.getVector().getVectorLength());
+                // }
             });
 
             links
                 .attr("x1", (d: Arc) => d.start.x)
                 .attr("x2", (d: Arc) => d.end.x)
                 .attr("y1", (d: Arc) => d.start.y)
-                .attr("y2", (d: Arc) => d.end.y);
+                .attr("y2", (d: Arc) => d.end.y)
+                .attr("class", (d: Arc) => d.hidden ? "hidden" : "arc");
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);

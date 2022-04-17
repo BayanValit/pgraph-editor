@@ -33,7 +33,7 @@ export default class Vector {
 
     public getUnitVector(): Vector {
         const length = this.getVectorLength();
-        return new Vector(this.dx / length, this.dy / length);
+        return length !== 0 ? new Vector(this.dx / length, this.dy / length) : new Vector(0, 0);
     }
 
     public getNormal(): Vector {

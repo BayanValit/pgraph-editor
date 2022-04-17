@@ -20,4 +20,8 @@ export default class TwoWayArc extends Arc {
             anchors
         );
     }
+
+    protected hideSmall(): void {
+        this.hidden = this.isReversed || this.getVector().getVectorLength() < 10; 
+    }
 }

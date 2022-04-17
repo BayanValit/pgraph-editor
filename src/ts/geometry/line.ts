@@ -7,6 +7,8 @@ import { toRadians } from "./converter";
 
 export default class Line {
 
+    public isReversed = false;
+
     constructor(
         public start: Point,
         public end: Point
@@ -40,10 +42,10 @@ export default class Line {
             endPoint = this.marginRectangleScout(marginEnd, target, true);
         }
         const newVector = Vector.fromPoints(startPoint, endPoint);
-        const isReversed = this.getVector().isReverse(newVector);
+        this.isReversed = this.getVector().isReverse(newVector);
 
-        if (isReversed) {
-            this.start = newVector.getUnitVector().getSecondPoint(startPoint);
+        if (this.isReversed) {
+            this.start = endPoint;
             this.end = startPoint;
         } else {
             this.start = startPoint;

@@ -1,4 +1,4 @@
-import Arc from './objects/oneWayArc';
+import Arc from './objects/abstract/arc';
 import Position from './objects/position';
 import Transition from './objects/transition';
 import Matrix from './math/matrix';
@@ -8,6 +8,7 @@ import { ConfigType, DEFAULT_SETTINGS } from './constants';
 import { GraphStateData } from './utils/jsonGraphState';
 import TwoFrontAlgorithm from './layout/algorithms/twoFrontAlgorithm';
 import OneWayArc from './objects/oneWayArc';
+import TwoWayArc from './objects/twoWayArc';
 
 export type CollectionData = { 
     positions: Array<Position>,
@@ -57,17 +58,29 @@ export default class GraphState extends EventTarget {
 
         const getArcsFromMatrix = (nodeFrom: Node[], nodeTo: Node[]) => {
             const canBeInhibitory = nodeFrom[0] instanceof Position && data.type == ConfigType.Inhibitory;
-            const matrix = nodeFrom[0] instanceof Position ? FP : FT;
+            const matrix = (collection: Node[]) => (collection[0] instanceof Position ? FP : FT);
 
-            matrix.forEach((array, row: number) => {
-                array.forEach((element, col: number) => {
-                    if (element) {
-                        const arc = new Arc(
-                            nodeFrom[row],
-                            nodeTo[col],
-                            element,
-                            canBeInhibitory && Boolean(FI[row][col])
-                        );
+            matrix(nodeFrom).forEach((array, row: number) => {
+                array.forEach((cell, col: number) => {
+                    if (cell) { // cell is matrix(nodeFrom)[row][col]
+                        let arc: Arc;
+
+                        if (matrix(nodeTo)[row][col]) {
+                            arc = new TwoWayArc(
+                                nodeFrom[row],
+                                nodeTo[col],
+                                cell,
+                                matrix(nodeTo)[row][col]
+                            );
+                            matrix(nodeTo)[row][col] = 0;
+                        } else {
+                            arc = new OneWayArc(
+                                nodeFrom[row],
+                                nodeTo[col],
+                                cell,
+                                canBeInhibitory && Boolean(FI[row][col])
+                            );
+                        }
                         arc.anchors = data.arcs?.find((x) => x.binding == arc.getSerial())?.anchors;
     
                         nodeFrom[row].target.push(arc);
@@ -107,9 +120,14 @@ export default class GraphState extends EventTarget {
         positions.forEach((position, row) => {
             position.target.forEach(arc => {
                 const col = transitions.indexOf(arc.target as Transition);
-                if (col >= 0) {
-                    FP[row][col] = (arc as OneWayArc).weight;
+
+                if (col >= 0 && arc instanceof OneWayArc) {
+                    FP[row][col] = arc.weight;
                     FI[row][col] = Number(arc.hasInhibitory);
+                }
+                if (col >= 0 && arc instanceof TwoWayArc) {
+                    FP[row][col] = arc.sourceWeight;
+                    FT[row][col] = arc.targetWeight;
                 }
             });
             data.markup.push(position.marks);
@@ -120,7 +138,7 @@ export default class GraphState extends EventTarget {
             transition.target.forEach(arc => {
                 const col = positions.indexOf(arc.target as Position);
                 if (col >= 0) {
-                    FT[row][col] = (arc as OneWayArc).weight;
+                    FT[row][col] += (arc as OneWayArc).weight;
                 }
             });
             data.transitions.push({ center: transition.center, rotate: transition.rotateAngle });

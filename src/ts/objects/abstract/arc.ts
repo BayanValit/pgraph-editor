@@ -10,6 +10,8 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
 
     public marginStart = DEFAULT_SETTINGS.object.arcMarginStart;
     public marginEnd = DEFAULT_SETTINGS.object.arcMarginEnd;
+    public hidden = false;
+    public isReversed = false;
 
     constructor(
         public source: Node,
@@ -26,9 +28,15 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         );
         this.start = line.start;
         this.end = line.end;
+        this.isReversed = line.isReversed;
+        this.hideSmall();
     }
 
     public getSerial(): string {
         return this.source.nodeType + this.source.displayIndex  + '-' + this.target.nodeType + this.target.displayIndex;
+    }
+
+    protected hideSmall(): void {
+        this.hidden = this.isReversed && this.getVector().getVectorLength() > 5; 
     }
 }

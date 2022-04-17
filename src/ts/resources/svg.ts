@@ -1,6 +1,6 @@
 export const DEFS = {
-    marker_end:
-        `<marker id="marker-end" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="7" markerHeight="7" orient="auto">
+    marker_standart:
+        `<marker id="marker-standart" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
             <path class="arc-end" d="M-5,-5 L5,0 L-5,5"></path>
         </marker>`,
     mark_0:

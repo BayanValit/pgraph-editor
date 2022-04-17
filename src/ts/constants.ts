@@ -6,11 +6,11 @@ export const DEFAULT_SETTINGS: Settings = {
     object: {
         transitionWidth: 120,
         transitionHeight: 40,
-        positionRadius: 40,
-        anchorRadius: 10,
-        arcMarginStart: 15,
-        arcMarginEnd: 15,
-        sizeArrow: 7,
+        positionRadius:   40,
+        anchorRadius:     10,
+        arcMarginStart:   15,
+        arcMarginEnd:     15,
+        sizeArrow:         7,
         initPositionMarks: 0,
     },
     layout: {

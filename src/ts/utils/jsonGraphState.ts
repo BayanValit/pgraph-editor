@@ -6,7 +6,7 @@ import Point from "../geometry/point";
 
 type PositionData   = { center: Point };
 type TransitionData = { center: Point, rotate: number };
-type ArcData        = { binding: string; anchors: Point[] };
+type ArcData        = { binding: string, anchors: Point[] };
 
 export type GraphStateData = {
     name: string;
