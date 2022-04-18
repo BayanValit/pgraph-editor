@@ -14,6 +14,8 @@ export interface ObjectsSettings {
     initPositionMarks: number;
     arcMarginStart: number;
     arcMarginEnd: number;
+    oneWayArcSymbol: string;
+    twoWayArcSymbol: string;
 }
 export interface LayoutSettings {
     viewportWidth: number;
@@ -22,6 +24,7 @@ export interface LayoutSettings {
     paddingTop: number;
     intervalX: number; // Optimal: positionRadius * 4
     intervalY: number; // Optimal: positionRadius * 4 + transitionHeight / 2
+    pathTension: number;
 }
 
 export interface AnimationSettings {

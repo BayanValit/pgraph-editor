@@ -12,6 +12,8 @@ export const DEFAULT_SETTINGS: Settings = {
         arcMarginEnd:     15,
         sizeArrow:         7,
         initPositionMarks: 0,
+        oneWayArcSymbol: '➝',
+        twoWayArcSymbol: '⮂'
     },
     layout: {
         viewportWidth: 1200,
@@ -20,6 +22,7 @@ export const DEFAULT_SETTINGS: Settings = {
         paddingTop: 100,
         intervalX: 160,
         intervalY: 180,
+        pathTension: 0.5 // ∈ [0, 1]
     },
     animation: {
         useStart: true

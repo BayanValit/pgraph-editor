@@ -15,6 +15,8 @@ import Settings from './settings';
 import * as resources from './resources/svg';
 import * as constants from './constants';
 import TwoWayArc from './objects/twoWayArc';
+import Path from './geometry/path';
+import Point from './geometry/point';
 
 const debug = createDebugger(constants.DEBUG_PREFIX);
 
@@ -23,6 +25,7 @@ interface GraphRenderOptions {
     state: GraphState;
 }
 
+// TODO! REFACTOR ME
 export default class GraphRender {
 
     private simulation: Simulation<SimulationNodeDatum, never>;
@@ -31,10 +34,7 @@ export default class GraphRender {
 
     protected selector: string;
     protected settings: Settings;
-    protected viewCenter: {
-        x: number,
-        y: number,
-    }
+    protected viewCenter: Point;
 
     constructor(selector: string, options: GraphRenderOptions) {
         this.selector = selector;
@@ -50,7 +50,7 @@ export default class GraphRender {
                 ...(options.settings?.layout ?? {})
             },
         }
-        this.viewCenter = { x: this.settings.layout.viewportWidth / 2, y: this.settings.layout.viewportHeight / 2 };
+        this.viewCenter = new Point(this.settings.layout.viewportWidth / 2, this.settings.layout.viewportHeight / 2);
         // Init simulation
         this.simulation = forceSimulation().velocityDecay(0.25).stop();
         // Set state
@@ -74,19 +74,30 @@ export default class GraphRender {
 
     protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
 
-        const links = this.view.selectAll(".arc")
+        const arcs = this.view.selectAll(".arc")
             .data(this.state.collection.arcs)
             .join((enter) => {
-                const line = enter.append("path")
-                    .attr('d', (obj: Arc) => obj.getPath())
-                    .attr("class", "arc")
-                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
-                    .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
+                const link = enter.append("g").attr("class", "link");
+                const arcBackground = link.append("path").attr("class", "arc-background");
+                const arc = link.append("path")
+                        .attr("class", "arc")
+                        .attr("id", (obj: Arc) => obj.getSerial())
+                        .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
+                        .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
+                link.append('text').attr("class", "arc-label")
+                        .attr('rotate', (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0)
+                        .append('textPath')
+                        .attr('href', (obj: Arc) => `#${obj.getSerial()}`)
+                        .attr("startOffset", "50%")
+                        .text((obj: Arc) => obj.getLabel());
                 if (this.settings.animation.useStart) {
-                    line.attr('d', (obj: Arc) => obj.getPath());
+                    // arc.attr('d', (obj: Arc) => obj.getPath()); // Arc animation variant
+                    arc.attr('d', (obj) => Path.toSvgPath(new Array(obj.getPoints().length).fill(this.viewCenter)));
+                    arcBackground.attr('d', arc.attr('d'));
                 }
-                return line;
+                return link;
             });
+
         const positions = this.view.selectAll(".position")
             .data(this.state.collection.positions)
             .join((enter) => {
@@ -136,16 +147,17 @@ export default class GraphRender {
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
         if (!this.settings.animation.useStart) {
-            links.each((link: Arc) => {
-                link.updateMargins();
+            arcs.each((arc: Arc) => {
+                arc.updateMargins();
             })
-            .attr('d', (obj: Arc) => obj.getPath())
             .classed("hide-start", (d: Arc) => d.startReversed)
             .classed("hide-end", (d: Arc) => d.endReversed)
-            .classed("hidden", (d: Arc) => d.hidden);
+            .classed("hidden", (d: Arc) => d.hidden)
+            .selectAll(".arc, .arc-background")
+            .attr('d', (obj: Arc) => obj.getPath());
         }
         
-        return [positions, transitions, links];
+        return [positions, transitions, arcs];
     }
 
     protected loadSvgResourses(): void {
@@ -159,7 +171,7 @@ export default class GraphRender {
     protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
 
         const nodesData = [...this.state.collection.positions, ...this.state.collection.transitions];
-        const [positions, transitions, links] = objects;
+        const [positions, transitions, arcs] = objects;
 
         // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
         if (this.settings.animation.useStart) {
@@ -180,18 +192,17 @@ export default class GraphRender {
                     });
                 });
     
-            links
-                .each((link: Arc) => {
-                    link.updateMargins();
+            arcs
+                .each((arc: Arc) => {
+                    arc.updateMargins();
                 })
                 .classed("hide-start", (d: Arc) => d.startReversed)
                 .classed("hide-end", (d: Arc) => d.endReversed)
                 .classed("hidden", (d: Arc) => d.hidden)
                 .transition()
                 .on("start", function start() {
-                    active(this)
+                    active(this).selectAll(".arc, .arc-background")
                         .attr('d', (obj: Arc) => obj.getPath());
-
                 })
                 .transition()
                 .on("end", () => {
@@ -199,16 +210,17 @@ export default class GraphRender {
                 });
         }
 
-
         this.simulation.nodes(nodesData).on("tick", () => {
-            links.each((link: Arc) => {
-                link.updateMargins();
+            arcs.each((arc: Arc) => {
+                arc.updateMargins();
             });
-
-            links.attr('d', (obj: Arc) => obj.getPath())
-                .classed("hide-start", (d: Arc) => d.startReversed)
+            arcs.classed("hide-start", (d: Arc) => d.startReversed)
                 .classed("hide-end", (d: Arc) => d.endReversed)
-                .classed("hidden", (d: Arc) => d.hidden);
+                .classed("hidden", (d: Arc) => d.hidden)
+                .selectAll(".arc, .arc-background")
+                .attr('d', (obj: Arc) => obj.getPath());
+            arcs.selectAll(".arc-label")
+                .attr('rotate', (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0);
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);

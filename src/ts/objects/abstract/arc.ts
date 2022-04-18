@@ -38,6 +38,14 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         return this.source.nodeType + this.source.displayIndex + this.linkSymbol + this.target.nodeType + this.target.displayIndex;
     }
     
+    public getLabel(): string | Error {
+        throw new Error("Unimplemented method was called");
+    }
+    
+    public getFullPath(): string {
+        return Path.toSvgPath([this.source.center, ...this.anchors, this.target.center]);
+    }
+    
     protected shouldHide(): void {
         this.hidden = this.getVector().getLength() * (this.isReverse ? -1 : 1) < this.hideAtLength;
     }

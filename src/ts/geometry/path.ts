@@ -1,12 +1,14 @@
 import Line from "./line";
 import Point from "./point";
-import { curveLinear, line } from 'd3-shape';
+import { curveCardinal, curveCatmullRom, line } from 'd3-shape';
+import { DEFAULT_SETTINGS } from "../constants";
 
 export default class Path extends Line {
 
     public anchors: Array<Point>;
 
-    public pathFunc = line().curve(curveLinear); // Choose your favourite curve type.
+    // NOTE: Choose your favourite curve type
+    public static pathFunc = line().curve(curveCardinal.tension(DEFAULT_SETTINGS.layout.pathTension));
 
     constructor(
         start: Point,
@@ -17,11 +19,15 @@ export default class Path extends Line {
         this.anchors = anchors;
     }
 
+    public static toSvgPath(points: Array<Point>): string {
+        return this.pathFunc(points.map((point) => (point.toArray())));
+    }
+
     public getPoints(): Array<Point> {
         return [this.start, ...this.anchors, this.end];
     }
 
     public getPath(): string {
-        return this.pathFunc(this.getPoints().map((point) => (point.toArray())));
+        return Path.toSvgPath(this.getPoints());
     }
 }
