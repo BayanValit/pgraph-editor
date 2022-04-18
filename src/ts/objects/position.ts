@@ -29,4 +29,10 @@ export default class Position extends Circle implements Node {
 
         this.marks = marks;
     }
+
+    public setCenter(center: Point) {
+        this.center = center;
+        this.source.forEach((arc) => (arc.end = center));
+        this.target.forEach((arc) => (arc.start = center));
+    }
 }

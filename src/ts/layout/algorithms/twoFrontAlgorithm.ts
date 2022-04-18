@@ -18,10 +18,10 @@ export default class TwoFrontAlgorithm implements AlgorithmInterface {
 
         for (let index = 0; index < n; index += 1) {
             if (collection.positions[index] && collection.positions[index].center === undefined) {
-                collection.positions[index].center = this.getOptimalPosition(NodeType.Position, index);
+                collection.positions[index].setCenter(this.getOptimalPosition(NodeType.Position, index));
             }
             if (collection.transitions[index] && collection.transitions[index].center === undefined) {
-                collection.transitions[index].center = this.getOptimalPosition(NodeType.Transition, index);
+                collection.transitions[index].setCenter(this.getOptimalPosition(NodeType.Transition, index));
             }
         }
         return collection;

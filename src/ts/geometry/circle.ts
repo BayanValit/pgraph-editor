@@ -37,9 +37,4 @@ export default class Circle extends Figure {
 
         return false;
     }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected onUpdatedCenter(_center: Point) {
-        return;
-    }
 }

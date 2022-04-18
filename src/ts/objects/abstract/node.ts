@@ -2,6 +2,7 @@ import { SimulationNodeDatum } from 'd3-force';
 import ObjectInterface from './objectInterface';
 import Arc from '../abstract/arc';
 import Figure from '../../geometry/figure';
+import Point from '../../geometry/point';
 
 export default interface Node extends Figure, SimulationNodeDatum, ObjectInterface {
 
@@ -19,6 +20,8 @@ export default interface Node extends Figure, SimulationNodeDatum, ObjectInterfa
 
     source: Array<Arc>;
     target: Array<Arc>;
+
+    setCenter(Point: Point): void;
 }
 
 export enum NodeType {

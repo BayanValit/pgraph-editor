@@ -87,9 +87,4 @@ export default class Polygon extends Figure {
     result.isCollide = true;
     return result;
   }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected onUpdatedCenter(_center: Point) {
-        return;
-    }
 }

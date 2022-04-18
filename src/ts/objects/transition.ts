@@ -29,4 +29,10 @@ export default class Transition extends Rectangle implements Node {
 
         super(width, height, center, rotateAngle)
     }
+
+    public setCenter(center: Point) {
+        this.center = center;
+        this.source.forEach((arc) => (arc.end = center));
+        this.target.forEach((arc) => (arc.start = center));
+    }
 }
