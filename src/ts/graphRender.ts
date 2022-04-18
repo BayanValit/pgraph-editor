@@ -80,8 +80,8 @@ export default class GraphRender {
                 const line = enter.append("path")
                     .attr('d', (obj: Arc) => obj.getPath())
                     .attr("class", "arc")
-                    .attr("marker-end", "url(#marker-standart)")
-                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null);
+                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
+                    .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
                 if (this.settings.animation.useStart) {
                     line.attr('d', (obj: Arc) => obj.getPath());
                 }

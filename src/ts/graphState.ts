@@ -72,6 +72,7 @@ export default class GraphState extends EventTarget {
                                 nodeTo[col],
                                 cell,
                                 matrix(nodeTo)[row][col],
+                                canBeInhibitory && Boolean(FI[row][col]),
                             );
                             matrix(nodeTo)[row][col] = 0;
                         } else {
@@ -131,6 +132,7 @@ export default class GraphState extends EventTarget {
                 if (col >= 0 && arc instanceof TwoWayArc) {
                     FP[row][col] = arc.sourceWeight;
                     FT[row][col] = arc.targetWeight;
+                    FI[row][col] = Number(arc.hasInhibitory);
                 }
             });
             data.markup.push(position.marks);

@@ -2,6 +2,7 @@
  * Variables
  */
 $arc-color: #c9dae7;
+$gray-color: #c2c5c7;
 $black-color: #172129;
 
 /**
@@ -126,6 +127,12 @@ svg {
   }
 }
 
-.arc-end {
+#marker-standart {
   fill: $arc-color;
+}
+
+#marker-inhibitory {
+  fill: $arc-color;
+  stroke: $gray-color;
+  stroke-width: 2px;
 }
