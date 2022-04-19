@@ -1,17 +1,17 @@
-import AlgorithmInterface from "../algorithmInterface";
+import LayoutAlgorithm from "../LayoutAlgorithm";
 import { LayoutSettings } from "../../settings";
 import { NodeType } from "../../objects/abstract/node";
 import { CollectionData } from "../../graphState";
 import Point from "../../geometry/point";
 
-export default class TwoFrontAlgorithm implements AlgorithmInterface {
+export default class TwoFrontAlgorithm implements LayoutAlgorithm {
 
     constructor(
         public collection: CollectionData,
         public settings: LayoutSettings,
     ) {}
 
-    public setLayout(): CollectionData {
+    public computeLayout(): CollectionData {
         const collection = this.collection;
 
         const n = Math.max(collection.positions.length, collection.transitions.length);

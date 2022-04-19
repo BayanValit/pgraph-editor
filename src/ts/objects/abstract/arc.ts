@@ -8,6 +8,7 @@ import Rectangle from '../../geometry/rectangle';
 import Vector from '../../geometry/vector';
 import { toRadians } from '../../geometry/converter';
 import { DEFAULT_SETTINGS } from '../../constants';
+import { formatArcLabelText } from '../../utils/formatText';
 
 export default abstract class Arc extends Path implements SimulationLinkDatum<SimulationNodeDatum>, ObjectInterface {
 
@@ -18,6 +19,7 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
     public endReversed = false;
     public isReverse = false;
     public linkSymbol: string;
+    public labelPattern: string;
     public hideAtLength: number;
 
     constructor(
@@ -38,10 +40,10 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         return this.source.nodeType + this.source.displayIndex + this.linkSymbol + this.target.nodeType + this.target.displayIndex;
     }
     
-    public getLabel(): string | Error {
-        throw new Error("Unimplemented method was called");
+    public getLabel(): string {
+        return formatArcLabelText(this);
     }
-    
+
     public getFullPath(): string {
         return Path.toSvgPath([this.source.center, ...this.anchors, this.target.center]);
     }
@@ -59,8 +61,12 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
     private calcMarginsToFigures(): void {
         
         const anchorsAll = [this.source.center, ...this.anchors, this.target.center];
-        const vectorFrom = Vector.fromPoints(anchorsAll.first(), anchorsAll.second());
-        const vectorTo = Vector.fromPoints(anchorsAll.penultimate(), anchorsAll.last());
+        
+        // alias indexes
+        const [first, second, penultimate, last] = [0, 1, anchorsAll.length - 2, anchorsAll.length - 1];
+
+        const vectorFrom = Vector.fromPoints(anchorsAll[first], anchorsAll[second]);
+        const vectorTo = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
 
         const scoutFunction = (margin: number, object: Node, vector: Vector, inverse = false) => {
             if (object instanceof Circle) {
@@ -71,21 +77,21 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
             }
         };       
 
-        anchorsAll.first(scoutFunction(this.marginStart, this.source, vectorFrom));
-        anchorsAll.last(scoutFunction(this.marginEnd, this.target, vectorTo, true));
+        anchorsAll[first] = scoutFunction(this.marginStart, this.source, vectorFrom);
+        anchorsAll[last] = scoutFunction(this.marginEnd, this.target, vectorTo, true);
 
-        const newVectorFrom = Vector.fromPoints(anchorsAll.first(), anchorsAll.second());
-        const newVectorTo = Vector.fromPoints(anchorsAll.penultimate(), anchorsAll.last());
+        const newVectorFrom = Vector.fromPoints(anchorsAll[first], anchorsAll[second]);
+        const newVectorTo = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
 
         this.startReversed = vectorFrom.isReverse(newVectorFrom);
         this.endReversed = vectorTo.isReverse(newVectorTo);
         
-        const startToTarget = Vector.fromPoints(anchorsAll.first(), this.target.center).getLength();
-        const endToTarget = Vector.fromPoints(anchorsAll.last(), this.target.center).getLength();
+        const startToTarget = Vector.fromPoints(anchorsAll[first], this.target.center).getLength();
+        const endToTarget = Vector.fromPoints(anchorsAll[last], this.target.center).getLength();
         this.isReverse = startToTarget < endToTarget;
 
-        this.start = this.startReversed ? anchorsAll.second() : anchorsAll.first();
-        this.end = this.endReversed ? anchorsAll.penultimate() : anchorsAll.last();
+        this.start = this.startReversed ? anchorsAll[second] : anchorsAll[first];
+        this.end = this.endReversed ? anchorsAll[penultimate] : anchorsAll[last];
     }
 
     private marginCircleScout(

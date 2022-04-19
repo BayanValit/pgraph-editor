@@ -1,10 +1,10 @@
 import { CollectionData } from "../graphState";
 import { LayoutSettings } from "../settings";
 
-export default interface AlgorithmInterface {
+export default interface LayoutAlgorithm {
 
     collection: CollectionData;
     settings: LayoutSettings;
 
-    setLayout(): CollectionData;
+    computeLayout(): CollectionData;
 }

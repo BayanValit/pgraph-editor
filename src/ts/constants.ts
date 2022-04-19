@@ -2,7 +2,6 @@ import Settings from './settings';
 
 export const DEFAULT_SETTINGS: Settings = {
     debugMode: true,
-    name: 'Untitled network',
     object: {
         transitionWidth: 120,
         transitionHeight: 40,
@@ -13,7 +12,11 @@ export const DEFAULT_SETTINGS: Settings = {
         sizeArrow:         7,
         initPositionMarks: 0,
         oneWayArcSymbol: '➝',
-        twoWayArcSymbol: '⮂'
+        twoWayArcSymbol: '⮂',
+        oneArcHideAtLength: 0,
+        twoArcHideAtLength: 12,
+        oneArcLabelPattern: '%w',
+        twoArcLabelPattern: '%ws | %ii%wt',
     },
     layout: {
         viewportWidth: 1200,

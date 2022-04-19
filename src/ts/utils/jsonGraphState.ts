@@ -2,25 +2,7 @@
 import { ConfigType, DEFAULT_SETTINGS } from "../constants";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
-import Point from "../geometry/point";
-
-type PositionData   = { center: Point };
-type TransitionData = { center: Point, rotate: number };
-type ArcData        = { binding: string, anchors: Array<{ x: number, y: number }> };
-
-export type GraphStateData = {
-    name: string;
-    type: ConfigType;
-    markup: number[];
-    matrices: {
-        FP: Matrix;
-        FT: Matrix;
-        FI?: Matrix;
-    },
-    positions  : Array<PositionData>;
-    transitions: Array<TransitionData>;
-    arcs       : Array<ArcData>;
-}
+import { GraphStateData } from "../graphState";
 
 export function serializeToJson(data: GraphStateData): string {
     return JSON.stringify(data, null, 2).replace(/\n(\s+\d+,?\n)+\s*/gs, formatReplacer);
@@ -39,7 +21,6 @@ export function parseFromJson(serialized: string): GraphStateData {
     const data = autofix(JSON.parse(serialized));
     assertIsValid(data);
     const {
-        name,
         type,
         markup,
         matrices,
@@ -48,7 +29,6 @@ export function parseFromJson(serialized: string): GraphStateData {
         arcs
     } = data;
     return {
-        name,
         type,
         markup,
         matrices,
@@ -59,7 +39,6 @@ export function parseFromJson(serialized: string): GraphStateData {
 }
 
 function autofix(data: any) {
-    data.name ??= DEFAULT_SETTINGS.name;
     data.type ??= ConfigType.Default;
     if (data.type == ConfigType.Inhibitory) {
         data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));

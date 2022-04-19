@@ -1,6 +1,5 @@
 export default interface Settings {
     debugMode: boolean;
-    name: string;
     object: ObjectsSettings;
     layout: LayoutSettings;
     animation: AnimationSettings;
@@ -16,6 +15,10 @@ export interface ObjectsSettings {
     arcMarginEnd: number;
     oneWayArcSymbol: string;
     twoWayArcSymbol: string;
+    oneArcHideAtLength: number;
+    twoArcHideAtLength: number;
+    oneArcLabelPattern: string;
+    twoArcLabelPattern: string;
 }
 export interface LayoutSettings {
     viewportWidth: number;

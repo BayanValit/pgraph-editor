@@ -5,11 +5,27 @@ import Matrix from './math/matrix';
 import Node from './objects/abstract/node';
 import { LayoutSettings } from './settings';
 import { ConfigType, DEFAULT_SETTINGS } from './constants';
-import { GraphStateData } from './utils/jsonGraphState';
 import TwoFrontAlgorithm from './layout/algorithms/twoFrontAlgorithm';
 import OneWayArc from './objects/oneWayArc';
 import TwoWayArc from './objects/twoWayArc';
 import Point from './geometry/point';
+
+type PositionData   = { center: Point };
+type TransitionData = { center: Point, rotate: number };
+type ArcData        = { binding: string, anchors: Array<{ x: number, y: number }> };
+
+export type GraphStateData = {
+    type: ConfigType;
+    markup: number[];
+    matrices: {
+        FP: Matrix;
+        FT: Matrix;
+        FI?: Matrix;
+    },
+    positions  : Array<PositionData>;
+    transitions: Array<TransitionData>;
+    arcs       : Array<ArcData>;
+}
 
 export type CollectionData = { 
     positions: Array<Position>,
@@ -27,7 +43,6 @@ export default class GraphState extends EventTarget {
 
     constructor(
         collection: CollectionData,
-        public name: string,
         public type: ConfigType,
         public settings: LayoutSettings = DEFAULT_SETTINGS.layout
     ) {
@@ -35,7 +50,7 @@ export default class GraphState extends EventTarget {
 
         // @TODO: this should be implemented as strategy pattern 
         // @see https://refactoring.guru/ru/design-patterns/strategy (works only with VPN)
-        this.collection = (new TwoFrontAlgorithm(collection, this.settings)).setLayout();
+        this.collection = (new TwoFrontAlgorithm(collection, this.settings)).computeLayout();
     }
 
     public emit(type: GraphStateEventType) {
@@ -98,7 +113,7 @@ export default class GraphState extends EventTarget {
         getArcsFromMatrix(collection.positions, collection.transitions);
         getArcsFromMatrix(collection.transitions, collection.positions);
 
-        return new GraphState(collection, data.name, data.type, settings);
+        return new GraphState(collection, data.type, settings);
     }
 
     public getData(): GraphStateData {
@@ -112,7 +127,6 @@ export default class GraphState extends EventTarget {
         const markup: number[] = [];
 
         const data: GraphStateData = {
-            name: this.name,
             matrices: undefined,
             markup,
             type: this.type,

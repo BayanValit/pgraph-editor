@@ -2,12 +2,14 @@ import Point from '../geometry/point';
 import Node from './abstract/node';
 import Arc from './abstract/arc';
 import { DEFAULT_SETTINGS } from '../constants';
+import { formatArcLabelText } from '../utils/formatText';
 
 export default class OneWayArc extends Arc {
 
     public weight: number;
     public readonly linkSymbol = DEFAULT_SETTINGS.object.oneWayArcSymbol;
-    public readonly hideAtLength = 0; // TODO: move to setting
+    public readonly labelPattern = DEFAULT_SETTINGS.object.oneArcLabelPattern;
+    public readonly hideAtLength = DEFAULT_SETTINGS.object.oneArcHideAtLength;
 
     constructor(
         source: Node,
@@ -27,6 +29,8 @@ export default class OneWayArc extends Arc {
     }
 
     public getLabel(): string {
-        return (this.weight > 1 && !this.hasInhibitory) ? `– ${this.weight} –` : '';
+        if (this.weight > 1) {
+            return formatArcLabelText(this);
+        }
     }
 }

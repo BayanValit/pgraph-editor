@@ -19,7 +19,6 @@ function fetchGraphState() {
 }
 
 function update(state) {
-    document.getElementById('name').textContent = state.name;
     graph.state = state;
     graph.renderer = new GraphRender('#viewport', { state })
     graph.renderer.render();
@@ -58,7 +57,7 @@ function exportConfig() {
     document.querySelector("#configEditor").value = configJson;
 
     const link = document.createElement("a");
-    const file = new File([configJson], graph.state.name + ".json", {
+    const file = new File([configJson], "PetriNet_" + new Date().toISOString() + ".json", {
         type: "application/json",
     });
 
