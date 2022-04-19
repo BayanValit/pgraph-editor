@@ -24,10 +24,7 @@ export default class Transition extends Rectangle implements Node {
         center: Point = new Point(0, 0),
         rotateAngle = 0,
     ) {
-        const width = DEFAULT_SETTINGS.object.transitionWidth;
-        const height = DEFAULT_SETTINGS.object.transitionHeight;
-
-        super(width, height, center, rotateAngle)
+        super(DEFAULT_SETTINGS.object.transitionWidth, DEFAULT_SETTINGS.object.transitionHeight, center, rotateAngle);
     }
 
     public setCenter(center: Point) {
