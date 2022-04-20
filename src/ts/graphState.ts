@@ -78,24 +78,24 @@ export default class GraphState extends EventTarget {
 
             matrix(nodeFrom).forEach((array, row: number) => {
                 array.forEach((cell, col: number) => {
-                    if (cell) { // cell is matrix(nodeFrom)[row][col]
+                    const hasInhibitory = canBeInhibitory && Boolean(FI[row][col]);
+                    if (cell || hasInhibitory) { // cell is matrix(nodeFrom)[row][col]
                         let arc: Arc;
-
-                        if (matrix(nodeTo)[row][col]) {
+                        if (matrix(nodeTo)[col][row]) {
                             arc = new TwoWayArc(
                                 nodeFrom[row],
                                 nodeTo[col],
                                 cell,
-                                matrix(nodeTo)[row][col],
-                                canBeInhibitory && Boolean(FI[row][col]),
+                                matrix(nodeTo)[col][row],
+                                hasInhibitory,
                             );
-                            matrix(nodeTo)[row][col] = 0;
+                            matrix(nodeTo)[col][row] = 0;
                         } else {
                             arc = new OneWayArc(
                                 nodeFrom[row],
                                 nodeTo[col],
                                 cell,
-                                canBeInhibitory && Boolean(FI[row][col]),
+                                hasInhibitory,
                             );
                         }
                         const anchors = data.arcs?.find((x) => x.binding == arc.getSerial())?.anchors;

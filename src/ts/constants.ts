@@ -16,7 +16,7 @@ export const DEFAULT_SETTINGS: Settings = {
         oneArcHideAtLength: 0,
         twoArcHideAtLength: 12,
         oneArcLabelPattern: '%w',
-        twoArcLabelPattern: '%ws | %ii%wt',
+        twoArcLabelPattern: '%wt | %ii%ws',
     },
     layout: {
         viewportWidth: 1200,
