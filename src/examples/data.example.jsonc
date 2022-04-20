@@ -1,8 +1,7 @@
 {
-  "name": "Пример для изменения алгоритма по нахождению инвариантов",
   "matrices": {
     "FP": [
-      [1, 0, 0, 1, 0, 0],
+      [1, 1, 0, 1, 0, 0],
       [1, 1, 1, 1, 0, 0],
       [0, 1, 1, 0, 0, 0],
       [0, 0, 0, 0, 1, 0],
@@ -17,15 +16,22 @@
       [0, 0, 0, 0, 0, 1],
       [0, 0, 1, 0, 0, 1]
     ],
-    "FI": null
+    "FI": [
+      [1, 1, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0],
+      [0, 0, 0, 0, 0, 0]
+    ]
   },
   "markup": [1, 18, 1200, 33000000, 5, 0],
-  "type": "default",
+  "type": "inhibitory",
   "positions": [
     {
       "center": {
-        "x": 100,
-        "y": 100
+        "x": 271.368076202736,
+        "y": 101.41375305683624
       }
     },
     {
@@ -36,139 +42,154 @@
     },
     {
       "center": {
-        "x": 420,
-        "y": 100
+        "x": 707.7450917607206,
+        "y": 97.13516454200995
       }
     },
     {
       "center": {
-        "x": 580,
-        "y": 460
+        "x": 605,
+        "y": 376
       }
     },
     {
       "center": {
-        "x": 740,
-        "y": 100
+        "x": 849.1120249434838,
+        "y": 100.74288973683879
       }
     },
     {
       "center": {
-        "x": 900,
-        "y": 460
+        "x": 982,
+        "y": 471
       }
     }
   ],
   "transitions": [
     {
       "center": {
-        "x": 100,
-        "y": 280
+        "x": 146,
+        "y": 294.0000000000001
       },
       "rotate": 0
     },
     {
       "center": {
-        "x": 260,
-        "y": 280
+        "x": 479.75142105811534,
+        "y": 267.0919024687098
       },
       "rotate": 0
     },
     {
       "center": {
-        "x": 420,
-        "y": 280
+        "x": 431.912386411956,
+        "y": 462
       },
       "rotate": 0
     },
     {
       "center": {
-        "x": 580,
-        "y": 280
+        "x": 492.2361716090468,
+        "y": 95.93128671703083
       },
       "rotate": 0
     },
     {
       "center": {
-        "x": 740,
-        "y": 280
+        "x": 797,
+        "y": 394
       },
       "rotate": 0
     },
     {
       "center": {
-        "x": 900,
-        "y": 280
+        "x": 978,
+        "y": 270
       },
       "rotate": -40
     }
   ],
   "arcs": [
     {
-      "binding": "P1-T1"
+      "binding": "P1⮂T1",
+      "anchors": [
+        {
+          "x": 150,
+          "y": 200
+        }
+      ]
     },
     {
-      "binding": "P1-T4"
+      "binding": "P1➝T2",
+      "anchors": []
     },
     {
-      "binding": "P2-T1"
+      "binding": "P1➝T4",
+      "anchors": []
     },
     {
-      "binding": "P2-T2"
+      "binding": "P2➝T1",
+      "anchors": []
     },
     {
-      "binding": "P2-T3"
+      "binding": "P2➝T2",
+      "anchors": []
     },
     {
-      "binding": "P2-T4"
+      "binding": "P2⮂T3",
+      "anchors": []
     },
     {
-      "binding": "P3-T2"
+      "binding": "P2➝T4",
+      "anchors": []
     },
     {
-      "binding": "P3-T3"
+      "binding": "P3➝T2",
+      "anchors": []
     },
     {
-      "binding": "P4-T5"
+      "binding": "P3➝T3",
+      "anchors": []
     },
     {
-      "binding": "P5-T5"
+      "binding": "P4⮂T5",
+      "anchors": []
     },
     {
-      "binding": "P5-T6"
+      "binding": "P5➝T5",
+      "anchors": []
     },
     {
-      "binding": "P6-T5"
+      "binding": "P5⮂T6",
+      "anchors": []
     },
     {
-      "binding": "T1-P1"
+      "binding": "P6➝T5",
+      "anchors": []
     },
     {
-      "binding": "T2-P3"
+      "binding": "T3➝P1",
+      "anchors": []
     },
     {
-      "binding": "T3-P1"
+      "binding": "T3➝P4",
+      "anchors": []
     },
     {
-      "binding": "T3-P4"
+      "binding": "T3➝P6",
+      "anchors": []
     },
     {
-      "binding": "T3-P6"
+      "binding": "T4➝P3",
+      "anchors": []
     },
     {
-      "binding": "T4-P3"
+      "binding": "T6➝P3",
+      "anchors": []
     },
     {
-      "binding": "T4-P5"
-    },
-    {
-      "binding": "T5-P6"
-    },
-    {
-      "binding": "T6-P3"
-    },
-    {
-      "binding": "T6-P6"
+      "binding": "T6➝P6",
+      "anchors": []
     }
   ]
 }

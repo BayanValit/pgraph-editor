@@ -27,13 +27,13 @@ export default class Vector {
         return this.dx * vector.dx + this.dy * vector.dy;
     }
 
-    public getVectorLength(): number {
+    public getLength(): number {
         return Math.sqrt(this.scalarMultiply(this));
     }
 
     public getUnitVector(): Vector {
-        const length = this.getVectorLength();
-        return new Vector(this.dx / length, this.dy / length);
+        const length = this.getLength();
+        return length !== 0 ? new Vector(this.dx / length, this.dy / length) : new Vector(0, 0);
     }
 
     public getNormal(): Vector {
@@ -49,6 +49,6 @@ export default class Vector {
     }
 
     public isReverse(vector: Vector): boolean {
-        return Math.sign(vector.dx) != Math.sign(this.dx) || Math.sign(vector.dy) != Math.sign(this.dy);
+        return Math.sign(vector.dx) != Math.sign(this.dx) && Math.sign(vector.dy) != Math.sign(this.dy);
     }
 }

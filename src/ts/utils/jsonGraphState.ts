@@ -1,14 +1,26 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DEFAULT_SETTINGS } from "../constants";
-import { GraphStateData, ConfigType } from "../graphState";
+import { ConfigType, DEFAULT_SETTINGS } from "../constants";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
+import { GraphStateData } from "../graphState";
 
-export default function graphStateDataFromJson(serialized: string): GraphStateData {
+export function serializeToJson(data: GraphStateData): string {
+    return JSON.stringify(data, null, 2).replace(/\n(\s+\d+,?\n)+\s*/gs, formatReplacer);
+}
+
+/**
+ * Correction of ugly output of numeric arrays via JSON.stringify
+ * @param match // multi-line for formatting
+ * @return string
+ */
+function formatReplacer(match: string): string {
+    return match.replace(/\s+/gs, "").replaceAll(",", ", ");
+}
+
+export function parseFromJson(serialized: string): GraphStateData {
     const data = autofix(JSON.parse(serialized));
     assertIsValid(data);
     const {
-        name,
         type,
         markup,
         matrices,
@@ -17,7 +29,6 @@ export default function graphStateDataFromJson(serialized: string): GraphStateDa
         arcs
     } = data;
     return {
-        name,
         type,
         markup,
         matrices,
@@ -28,15 +39,18 @@ export default function graphStateDataFromJson(serialized: string): GraphStateDa
 }
 
 function autofix(data: any) {
-    data.name ??= DEFAULT_SETTINGS.name;
     data.type ??= ConfigType.Default;
     if (data.type == ConfigType.Inhibitory) {
         data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));
     }
 
-    if (!Array.isArray(data.markup)) {
-        data.markup = [];
-    }
+    const setArray = (array: Array<any>) => Array.isArray(array) ? array : [];
+
+    data.markup      = setArray(data.markup);
+    data.positions   = setArray(data.positions);
+    data.transitions = setArray(data.transitions);
+    data.arcs        = setArray(data.arcs);
+
     return data;
 }
 

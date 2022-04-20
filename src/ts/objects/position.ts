@@ -1,29 +1,38 @@
 import Point from '../geometry/point';
-import Node from './node';
+import Node, { NodeType } from './abstract/node';
 import Circle from '../geometry/circle';
-import Arc from './arc';
+import Arc from './abstract/arc';
 import { DEFAULT_SETTINGS } from '../constants';
 
 export default class Position extends Circle implements Node {
 
-    public readonly type = Position;
+    public readonly nodeType = NodeType.Position;
 
     public index?: number | undefined;
     public vx?: number | undefined;
     public vy?: number | undefined;
     public fx?: number | null | undefined;
     public fy?: number | null | undefined;
+    public x?: number | undefined;
+    public y?: number | undefined;
 
     public marks = 0;
     public source: Array<Arc> = [];
     public target: Array<Arc> = [];
 
     constructor(
-        center: Point = undefined,
-        marks = DEFAULT_SETTINGS.positions.initMarks,
-        radius = DEFAULT_SETTINGS.sizes.positionRadius
+        public displayIndex: number,
+        center: Point = new Point(0, 0),
+        marks: number = DEFAULT_SETTINGS.object.initPositionMarks,
     ) {
-        super(center, radius)
+        super(center, DEFAULT_SETTINGS.object.positionRadius)
+
         this.marks = marks;
+    }
+
+    public setCenter(center: Point) {
+        this.center = center;
+        this.source.forEach((arc) => (arc.end = center));
+        this.target.forEach((arc) => (arc.start = center));
     }
 }

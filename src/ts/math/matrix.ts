@@ -2,7 +2,7 @@ import NumberList from "./numberList";
 
 export default class Matrix extends Array<NumberList> {
 
-    constructor(items: Array<NumberList>) {
+    constructor(items: number[][]) {
         super();
         this.push(...items.map(item => new NumberList(item)));
     }

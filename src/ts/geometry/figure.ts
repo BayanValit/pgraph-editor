@@ -13,12 +13,9 @@ export default abstract class Figure {
     public set center(point: Point) {
         this.x = point?.x;
         this.y = point?.y;
-        // this.onUpdatedCenter(point);
     }
 
     public get center(): Point {
         return this.x && this.y ? new Point(this.x, this.y) : undefined;
     }
-
-    protected abstract onUpdatedCenter(center: Point): void;
 }

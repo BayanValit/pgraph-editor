@@ -19,11 +19,11 @@ export default class Circle extends Figure {
         if (Math.abs(d) > this.radius) {
             return false;
         }
-        if (Vector.fromPoints(line.start, this.center).getVectorLength() <= this.radius) {
+        if (Vector.fromPoints(line.start, this.center).getLength() <= this.radius) {
             return true;
         }
 
-        if (Vector.fromPoints(line.end, this.center).getVectorLength() <= this.radius) {
+        if (Vector.fromPoints(line.end, this.center).getLength() <= this.radius) {
             return true;
         }
         const start = unit.scalarMultiply(new Vector(line.start.x, line.start.y));
@@ -36,10 +36,5 @@ export default class Circle extends Figure {
         }
 
         return false;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    protected onUpdatedCenter(_center: Point) {
-        return;
     }
 }

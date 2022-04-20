@@ -2,10 +2,7 @@ import { toRadians } from "./converter";
 
 export default class Point {
 
-    constructor(public x: number, public y: number) {
-        this.x = x;
-        this.y = y;
-    }
+    constructor(public x: number, public y: number) {}
 
     public set(point: Point) {
         this.x = point?.x;
@@ -42,5 +39,9 @@ export default class Point {
         const Y = (this.x - center.x) * Math.sin(radians) + (this.y - center.y) * Math.cos(radians) + center.y;
     
         return new Point(X, Y);
+    }
+
+    public toArray(): [number, number] {
+        return [this.x, this.y];
     }
 }

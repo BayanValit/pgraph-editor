@@ -1,8 +1,7 @@
 import createDebugger from 'debug';
 import Point from "../geometry/point";
-import Position from "../objects/position";
 import Transition from "../objects/transition";
-import Node from "../objects/node";
+import Node, { NodeType } from "../objects/abstract/node";
 import Rectangle from "../geometry/rectangle";
 import { Quadtree, quadtree } from "d3-quadtree";
 import { DEBUG_PREFIX } from '../constants';
@@ -65,8 +64,8 @@ export default function (radius, size) {
                 let y = yi - data.y - data.vy;
                 let l = x * x + y * y;
 
-                if (node.type == Position) {
-                    if (data.type == Position) {
+                if (node.nodeType == NodeType.Position) {
+                    if (data.nodeType == NodeType.Position) {
                         if (l < r * r) {
                             if (x === 0) x = jiggle(random), l += x * x;
                             if (y === 0) y = jiggle(random), l += y * y;
@@ -81,7 +80,7 @@ export default function (radius, size) {
                         }
                         return;
                     }
-                    if (data.type == Transition) {
+                    if (data.nodeType == NodeType.Transition) {
                         const xSemiSize = quad.size[0] / 2;
                         const ySemiSize = quad.size[1] / 2;
 
@@ -106,7 +105,7 @@ export default function (radius, size) {
                     }
                 }
 
-                if (node.type == Transition && data.type == Transition) {
+                if (node.nodeType == NodeType.Transition && data.nodeType == NodeType.Transition) {
 
                     const ctpoligon = new Rectangle(quad.size[0], quad.size[1], new Point(xi, yi), rotate);
                     const dtpoligon = new Rectangle(quad.size[0], quad.size[1], new Point(data.x, data.y), rotates[data.index]);
@@ -148,8 +147,8 @@ export default function (radius, size) {
                 }
                 const xRectDist = (size[0] + quad.size[0]) / 2;
                 const yRectDist = (size[1] + quad.size[1]) / 2;
-                return node.type == Position ? x0 > xi + r || x1 < xi - r || y0 > yi + r || y1 < yi - r
-                    : node.type == Transition ? x0 > xi + xRectDist || y0 > yi + yRectDist || x1 < xi - xRectDist || y1 < yi - yRectDist : false;
+                return node.nodeType == NodeType.Position ? x0 > xi + r || x1 < xi - r || y0 > yi + r || y1 < yi - r
+                    : node.nodeType == NodeType.Transition ? x0 > xi + xRectDist || y0 > yi + yRectDist || x1 < xi - xRectDist || y1 < yi - yRectDist : false;
             }
         }
     }
@@ -197,8 +196,8 @@ export default function (radius, size) {
             node = nodes[i],
                 radii[i] = +radius(node, i, nodes) ?? 0,
                 sizes[i] = size(node, i, nodes) ?? [0, 0],
-                rotates[i] = node.type == Transition ? (node as Transition).rotateAngle : null,
-                velocities[i] = node.type == Position ? radii[i] ** 2 * Math.PI : sizes[i][0] * sizes[i][1];
+                rotates[i] = node.nodeType == NodeType.Transition ? (node as Transition).rotateAngle : null,
+                velocities[i] = node.nodeType == NodeType.Position ? radii[i] ** 2 * Math.PI : sizes[i][0] * sizes[i][1];
         }
     }
 

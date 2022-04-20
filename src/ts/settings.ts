@@ -1,25 +1,35 @@
 export default interface Settings {
     debugMode: boolean;
-    name: string;
-    sizes: SizesSettings;
-    positions: PositionsSettings;
-    useStartingAnimation: boolean;
+    object: ObjectsSettings;
+    layout: LayoutSettings;
+    animation: AnimationSettings;
 }
-export interface SizesSettings {
+export interface ObjectsSettings {
     transitionWidth: number;
     transitionHeight: number;
     positionRadius: number;
-    viewportWidth: number;
-    viewportHeight: number;   
+    anchorRadius: number;
     sizeArrow: number;
+    initPositionMarks: number;
+    arcMarginStart: number;
+    arcMarginEnd: number;
+    oneWayArcSymbol: string;
+    twoWayArcSymbol: string;
+    oneArcHideAtLength: number;
+    twoArcHideAtLength: number;
+    oneArcLabelPattern: string;
+    twoArcLabelPattern: string;
 }
-
-export interface PositionsSettings {
+export interface LayoutSettings {
+    viewportWidth: number;
+    viewportHeight: number;
     paddingLeft: number;
     paddingTop: number;
     intervalX: number; // Optimal: positionRadius * 4
     intervalY: number; // Optimal: positionRadius * 4 + transitionHeight / 2
-    arcMarginStart: number;
-    arcMarginEnd: number;
-    initMarks: number;
+    pathTension: number;
+}
+
+export interface AnimationSettings {
+    useStart: boolean;
 }
