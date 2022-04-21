@@ -1,12 +1,15 @@
 /* global fetch document File URL window console */
 
 import { GraphState, GraphRender } from '../lib/index';
-import { parseFromJson, serializeToJson }from '../lib/utils/jsonGraphState';
+import { parseFromJson, serializeToJson } from '../lib/utils/jsonGraphState';
 
 const graph = {
     state: undefined,
     renderer: undefined,
 };
+
+let zoomRatio;
+// TODO: Add camera position
 
 function fetchGraphState() {
     return fetch("./examples/data.example.jsonc")
@@ -20,9 +23,10 @@ function fetchGraphState() {
 
 function update(state) {
     graph.state = state;
-    graph.renderer = new GraphRender('#viewport', { state })
+    graph.renderer = new GraphRender('#viewport', { state, settings: { animation: { zoomStartFrom: zoomRatio } } })
     graph.renderer.render();
     graph.state.addEventListener('changed', () => console.log(graph.state));
+    graph.state.addEventListener('zoomed', (e)  => zoomRatio = e.detail.zoomRatio);
 }
 
 function initMouseEvents() {
@@ -43,12 +47,16 @@ function initKeyboardEvents() {
             return;
         }
     });
+    document.querySelector("#configEditor").addEventListener("keydown", e => {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            e.target.setRangeText('  ', e.target.selectionStart, e.target.selectionEnd, 'end');
+        }
+    });
 }
 
 function importAndRedraw() {
     const configJson = document.querySelector("#configEditor").value;
-    // TODO: Describe the logic of error output in a separate class
-    document.querySelector('.debugMenu span').innerHTML = '❌';
     update(GraphState.create(parseFromJson(configJson)));
 }
 
@@ -69,8 +77,6 @@ function exportConfig() {
 }
 
 window.onload = function () {
-    document.getElementById("debugPanel").style.display = "flex";
-
     fetchGraphState().then((state) => {
         update(state);
     });

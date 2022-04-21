@@ -1,13 +1,13 @@
 import Point from '../geometry/point';
 import Node from './abstract/node';
 import Arc from './abstract/arc';
-import { DEFAULT_SETTINGS } from '../constants';
+import { SETTINGS } from '../constants';
 
 export default class TwoWayArc extends Arc {
 
-    public readonly linkSymbol = DEFAULT_SETTINGS.object.twoWayArcSymbol;
-    public readonly labelPattern = DEFAULT_SETTINGS.object.twoArcLabelPattern;
-    public readonly hideAtLength = DEFAULT_SETTINGS.object.twoArcHideAtLength;
+    public readonly linkSymbol = SETTINGS.object.twoWayArcSymbol;
+    public readonly labelPattern = SETTINGS.object.twoWayArcLabelPattern;
+    public readonly hideAtLength = SETTINGS.object.twoWayArcHideAtLength;
 
     constructor(
         source: Node,

@@ -7,13 +7,12 @@ import Circle from '../../geometry/circle';
 import Rectangle from '../../geometry/rectangle';
 import Vector from '../../geometry/vector';
 import { toRadians } from '../../geometry/converter';
-import { DEFAULT_SETTINGS } from '../../constants';
-import { formatArcLabelText } from '../../utils/formatText';
+import { SETTINGS } from '../../constants';
 
 export default abstract class Arc extends Path implements SimulationLinkDatum<SimulationNodeDatum>, ObjectInterface {
 
-    public marginStart = DEFAULT_SETTINGS.object.arcMarginStart;
-    public marginEnd = DEFAULT_SETTINGS.object.arcMarginEnd;
+    public marginStart = SETTINGS.object.marginStart;
+    public marginEnd = SETTINGS.object.marginEnd;
     public hidden = false;
     public startReversed = false;
     public endReversed = false;
@@ -40,10 +39,6 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         return this.source.nodeType + this.source.displayIndex + this.linkSymbol + this.target.nodeType + this.target.displayIndex;
     }
     
-    public getLabel(): string {
-        return formatArcLabelText(this);
-    }
-
     public getFullPath(): string {
         return Path.toSvgPath([this.source.center, ...this.anchors, this.target.center]);
     }

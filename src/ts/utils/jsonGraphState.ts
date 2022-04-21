@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigType, DEFAULT_SETTINGS } from "../constants";
+import { ConfigType } from "../constants";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
 import { GraphStateData } from "../graphState";

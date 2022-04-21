@@ -3,26 +3,28 @@ import Node from './objects/abstract/node';
 import Position from './objects/position';
 import Transition from './objects/transition';
 import Arc from './objects/oneWayArc';
-import { Simulation, SimulationNodeDatum, forceSimulation, forceLink } from 'd3-force';
+import { Simulation, SimulationNodeDatum, forceSimulation, forceLink, forceCenter, forceManyBody } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
-import { active } from 'd3-transition';
+import { DEBUG_PREFIX, SETTINGS } from './constants';
+import { mergeSettings } from './settings';
+import * as resources from './resources/svg';
 import GraphState, { GraphStateEventType } from './graphState';
 import createDebugger from 'debug';
-import complexCollide from './physics/collision';
 import formatMarkCount from './utils/formatText';
 import Settings from './settings';
-import * as resources from './resources/svg';
-import * as constants from './constants';
 import TwoWayArc from './objects/twoWayArc';
-import Path from './geometry/path';
 import Point from './geometry/point';
+import { zoom, D3ZoomEvent } from 'd3-zoom';
+import { formatArcLabelText } from './utils';
 
-const debug = createDebugger(constants.DEBUG_PREFIX);
+
+const debug = createDebugger(DEBUG_PREFIX);
 
 interface GraphRenderOptions {
-    settings?: Partial<Settings>;
     state: GraphState;
+    settings?: Partial<Settings>;
+    zoomStartFrom?: number;
 }
 
 // TODO! REFACTOR ME
@@ -30,88 +32,73 @@ export default class GraphRender {
 
     private simulation: Simulation<SimulationNodeDatum, never>;
     private view: Selection<SVGSVGElement, unknown, HTMLElement, never>;
+    private container: Selection<SVGGElement, unknown, HTMLElement, never>;
     private state: GraphState;
 
     protected selector: string;
     protected settings: Settings;
-    protected viewCenter: Point;
+    protected viewSize: Point;
 
     constructor(selector: string, options: GraphRenderOptions) {
         this.selector = selector;
-        this.settings = {
-            ...constants.DEFAULT_SETTINGS,
-            ...options.settings,
-            object: {
-                ...constants.DEFAULT_SETTINGS.object,
-                ...(options.settings?.object ?? {})
-            },
-            layout: {
-                ...constants.DEFAULT_SETTINGS.layout,
-                ...(options.settings?.layout ?? {})
-            },
-        }
-        this.viewCenter = new Point(this.settings.layout.viewportWidth / 2, this.settings.layout.viewportHeight / 2);
-        // Init simulation
-        this.simulation = forceSimulation().velocityDecay(0.25).stop();
-        // Set state
+        this.settings = mergeSettings(SETTINGS, options.settings);
+
+        select(this.selector).selectChildren().remove();
+        select("body").classed("with-debug", this.settings.debugMode);
+
+        this.viewSize = new Point(
+            Number.parseFloat(select(this.selector).style("width")),
+            Number.parseFloat(select(this.selector).style("height"))
+        );
+        this.simulation = forceSimulation().velocityDecay(0.25);
         this.state = options.state;
     }
 
     public render() {
         debug(this.state);
-        // Remove old objects
-        select(this.selector).selectChildren().remove();
-        // Create view 
-        this.view = select(this.selector)
-            .append("svg")
-            .attr("height", this.settings.layout.viewportHeight)
-            .attr("width", this.settings.layout.viewportWidth);
+
+        this.view = select(this.selector).append("svg").attr("viewBox", `0 0 ${this.viewSize.x} ${this.viewSize.y}`)
+        this.container = this.view.append("g").attr("class", "zoom-container");
+
         // Render
         this.loadSvgResourses();
         this.doAnimate(this.createObjects());
         this.doPhysics();
     }
 
-    protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGSVGElement, never>> {
+    protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGElement, never>> {
 
-        const arcs = this.view.selectAll(".arc")
+        const arcs = this.container.selectAll(".arc")
             .data(this.state.collection.arcs)
             .join((enter) => {
                 const link = enter.append("g").attr("class", "link");
-                const arcBackground = link.append("path").attr("class", "arc-background");
-                const arc = link.append("path")
-                        .attr("class", "arc")
-                        .attr("id", (obj: Arc) => obj.getSerial())
-                        .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
-                        .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
-                link.append('text').attr("class", "arc-label")
-                        .attr('rotate', (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0)
-                        .append('textPath')
-                        .attr('href', (obj: Arc) => `#${obj.getSerial()}`)
-                        .attr("startOffset", "50%")
-                        .text((obj: Arc) => obj.getLabel());
-                if (this.settings.animation.useStart) {
-                    // arc.attr('d', (obj: Arc) => obj.getPath()); // Arc animation variant
-                    arc.attr('d', (obj) => Path.toSvgPath(new Array(obj.getPoints().length).fill(this.viewCenter)));
-                    arcBackground.attr('d', arc.attr('d'));
-                }
+                link.append("path").attr("class", "arc-background");
+                link.append("path")
+                    .attr("class", "arc")
+                    .attr("id", (obj: Arc) => obj.getSerial())
+                    .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
+                    .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
+                link.append("text").attr("class", "arc-label")
+                    .attr("rotate", (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0)
+                    .attr("dy", this.settings.object.arcLabelOffsetY)
+                    .append("textPath")
+                    .attr("href", (obj: Arc) => `#${obj.getSerial()}`)
+                    .attr("startOffset", "50%")
+                    .text((obj: Arc) => formatArcLabelText(obj));
                 return link;
             });
 
-        const positions = this.view.selectAll(".position")
+        const positions = this.container.selectAll(".position")
             .data(this.state.collection.positions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
-                if (!this.settings.animation.useStart) {
-                    node.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
-                }
                 node.append("circle")
                     .attr("class", "position")
                     .attr("r", (obj: Position) => obj.radius)
                     .attr("marks", (obj: Position) => obj.marks);
                 node.append("text")
                     .attr("class", "label")
-                    .attr("dy", "-2em")
+                    .attr("dy", this.settings.object.positionLabelOffsetY)
                     .text((_obj: never, key: number) => "P" + (key + 1));
                 node.append("text")
                     .attr("class", "custom-marks")
@@ -124,17 +111,17 @@ export default class GraphRender {
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
 
-        const transitions = this.view.selectAll(".transition")
+        const transitions = this.container.selectAll(".transition")
             .data(this.state.collection.transitions)
             .join((enter) => {
                 const node = enter.append("g").attr("class", "node");
-                if (!this.settings.animation.useStart) {
-                    node.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
-                }
+                
                 node.append("rect")
                     .attr("class", "transition")
                     .attr("width", (obj: Transition) => obj.width)
                     .attr("height", (obj: Transition) => obj.height)
+                    .attr("ry", this.settings.object.positionBorderRadius)
+                    .attr("rx", this.settings.object.positionBorderRadius)
                     .attr("transform", (obj: Transition) => `rotate(${obj.rotateAngle} 0 0) 
                         translate(${- obj.width / 2},${- obj.height / 2})`);
                 node.append("text")
@@ -146,16 +133,6 @@ export default class GraphRender {
                 .on("start", this.dragStartedNode.bind(this))
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
-        if (!this.settings.animation.useStart) {
-            arcs.each((arc: Arc) => {
-                arc.updateMargins();
-            })
-            .classed("hide-start", (d: Arc) => d.startReversed)
-            .classed("hide-end", (d: Arc) => d.endReversed)
-            .classed("hidden", (d: Arc) => d.hidden)
-            .selectAll(".arc, .arc-background")
-            .attr('d', (obj: Arc) => obj.getPath());
-        }
         
         return [positions, transitions, arcs];
     }
@@ -168,47 +145,10 @@ export default class GraphRender {
         }
     }
 
-    protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGSVGElement, never>[]): void {
+    protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGElement, never>[]): void {
 
         const nodesData = [...this.state.collection.positions, ...this.state.collection.transitions];
         const [positions, transitions, arcs] = objects;
-
-        // NOTE: Use `ease(d3.easePolyIn)` for beauty transitions
-        if (this.settings.animation.useStart) {
-            positions
-                .attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
-                .transition()
-                .on("start", function start() {
-                    active(this).attr("transform", function (obj: Position) {
-                        return `translate(${obj.x},${obj.y})`;
-                    });
-                });
-            transitions
-                .attr("transform", `translate(${this.viewCenter.x},${this.viewCenter.y})`)
-                .transition()
-                .on("start", function start() {
-                    active(this).attr("transform", function (obj: Transition) {
-                        return `translate(${obj.x},${obj.y})`;
-                    });
-                });
-    
-            arcs
-                .each((arc: Arc) => {
-                    arc.updateMargins();
-                })
-                .classed("hide-start", (d: Arc) => d.startReversed)
-                .classed("hide-end", (d: Arc) => d.endReversed)
-                .classed("hidden", (d: Arc) => d.hidden)
-                .transition()
-                .on("start", function start() {
-                    active(this).selectAll(".arc, .arc-background")
-                        .attr('d', (obj: Arc) => obj.getPath());
-                })
-                .transition()
-                .on("end", () => {
-                    this.simulation.restart(); // First start force simulation
-                });
-        }
 
         this.simulation.nodes(nodesData).on("tick", () => {
             arcs.each((arc: Arc) => {
@@ -218,25 +158,48 @@ export default class GraphRender {
                 .classed("hide-end", (d: Arc) => d.endReversed)
                 .classed("hidden", (d: Arc) => d.hidden)
                 .selectAll(".arc, .arc-background")
-                .attr('d', (obj: Arc) => obj.getPath());
+                .attr("d", (obj: Arc) => obj.getPath());
             arcs.selectAll(".arc-label")
-                .attr('rotate', (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0);
+                .attr("rotate", (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0);
 
             positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
             transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
         });
+
+        const zoomed = (e: D3ZoomEvent<Element, SimulationNodeDatum>) => {
+            this.container.attr('transform', 'translate(' + e.transform.x + ',' + e.transform.y + ') scale(' + e.transform.k + ')');
+            this.state.emit(GraphStateEventType.Zoomed, { detail: { zoomRatio: e.transform.k }} );
+        }
+
+        const zoomFunc = zoom().scaleExtent([0, 5]).filter((e) => (e.type === 'wheel' || e.button === 1)).on('zoom', zoomed);
+        this.zoomOnStart(nodesData, zoomFunc);
+        this.view.call(zoomFunc);
+    }
+
+    protected zoomOnStart(nodesData: Node[], zoomFunc) {
+        if (this.settings.animation.zoomStartFrom > 0) {
+            zoomFunc.scaleTo(this.view, this.settings.animation.zoomStartFrom);
+        }
+        const centers = nodesData.map(node => (node.center));
+
+        const topLeft     = centers.reduce((prev, current) => new Point(Math.min(prev.x, current.x), Math.min(prev.y, current.y)), centers[0]);
+        const bottomRight = centers.reduce((prev, current) => new Point(Math.max(prev.x, current.x), Math.max(prev.y, current.y)), centers[0]);
+
+        const workSpace = bottomRight.add(topLeft.getInverse());
+        const [paddingX, paddingY] = [this.settings.layout.paddingX, this.settings.layout.paddingY];
+        const [wRatio, hRatio] = [this.viewSize.x / (workSpace.x + paddingX), this.viewSize.y / (workSpace.y + paddingY)];
+        
+        zoomFunc.scaleTo(this.view.transition().duration(this.settings.animation.zoomStartDuration), Math.min(wRatio, hRatio));
     }
 
     protected doPhysics() {
-        /**
-         * TODO: ADD center and border force, something like:
-         * this.simulation.force("center", d3.forceCenter(this.viewCenter.x, this.viewCenter.y));
-         */
+        // TODO: Rectangle collisions
+        // this.simulation.force("collide", complexCollide(
+        //     this.settings.object.positionRadius, [this.settings.object.transitionWidth, this.settings.object.transitionHeight])
+        // );
+        this.simulation.force("center", forceCenter(this.viewSize.x / 2, this.viewSize.y / 2));
         this.simulation.force("link", forceLink(this.state.collection.arcs).strength(0));
-        this.simulation.force("collide", complexCollide(
-            this.settings.object.positionRadius, [this.settings.object.transitionWidth, this.settings.object.transitionHeight])
-        );
-        // this.simulation.force("charge", d3.forceManyBody().distanceMin(100).strength(500));
+        this.simulation.force("charge", forceManyBody().distanceMax(100).strength(-1000));
     }
 
     protected dragStartedNode(event: { active: number; }, d: Node): void {

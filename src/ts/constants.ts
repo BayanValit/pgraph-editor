@@ -1,34 +1,41 @@
 import Settings from './settings';
 
-export const DEFAULT_SETTINGS: Settings = {
+export const SETTINGS: Settings = {
     debugMode: true,
     object: {
+        // Position Settings
+        positionRadius: 40,
+        initMarks: 0,
+        positionLabelOffsetY: -45,
+        positionBorderRadius: 2,
+
+        // Transition Settings
         transitionWidth: 120,
         transitionHeight: 40,
-        positionRadius:   40,
-        anchorRadius:     10,
-        arcMarginStart:   15,
-        arcMarginEnd:     15,
-        sizeArrow:         7,
-        initPositionMarks: 0,
+
+        // Arc Settings
+        markerSize: 7,
+        marginStart: 15,
+        marginEnd: 15,
         oneWayArcSymbol: '➝',
         twoWayArcSymbol: '⮂',
-        oneArcHideAtLength: 0,
-        twoArcHideAtLength: 12,
-        oneArcLabelPattern: '%w',
-        twoArcLabelPattern: '%wt | %ii%ws',
+        anchorRadius: 10,
+        oneWayArcHideAtLength: 0,
+        twoWayArcHideAtLength: 12,
+        oneWayArcLabelPattern: '%w',
+        twoWayArcLabelPattern: '%ws | %ii%wt',
+        arcLabelOffsetY: -7,
     },
     layout: {
-        viewportWidth: 1200,
-        viewportHeight: 600,
-        paddingLeft: 100,
-        paddingTop: 100,
+        paddingX: 160,
+        paddingY: 160,
         intervalX: 160,
         intervalY: 180,
         pathTension: 0.5 // ∈ [0, 1]
     },
     animation: {
-        useStart: true
+        zoomStartFrom: 0,
+        zoomStartDuration: 250,
     }
 }
 

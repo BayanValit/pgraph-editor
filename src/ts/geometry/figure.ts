@@ -6,8 +6,8 @@ export default abstract class Figure {
     public y?: number | undefined;
 
     constructor(center?: Point, public rotateAngle = 0) {
-        this.x = center.x;
-        this.y = center.y;
+        this.x = center?.x;
+        this.y = center?.y;
     }
 
     public set center(point: Point) {
@@ -16,6 +16,6 @@ export default abstract class Figure {
     }
 
     public get center(): Point {
-        return this.x && this.y ? new Point(this.x, this.y) : undefined;
+        return this.x === undefined || this.y === undefined ? undefined : new Point(this.x, this.y);
     }
 }

@@ -4,7 +4,7 @@ import Transition from './objects/transition';
 import Matrix from './math/matrix';
 import Node from './objects/abstract/node';
 import { LayoutSettings } from './settings';
-import { ConfigType, DEFAULT_SETTINGS } from './constants';
+import { ConfigType, SETTINGS } from './constants';
 import TwoFrontAlgorithm from './layout/algorithms/twoFrontAlgorithm';
 import OneWayArc from './objects/oneWayArc';
 import TwoWayArc from './objects/twoWayArc';
@@ -34,7 +34,8 @@ export type CollectionData = {
 };
 
 export enum GraphStateEventType {
-    Changed = 'changed'
+    Changed = 'changed',
+    Zoomed  = 'zoomed',
 }
 
 export default class GraphState extends EventTarget {
@@ -44,7 +45,7 @@ export default class GraphState extends EventTarget {
     constructor(
         collection: CollectionData,
         public type: ConfigType,
-        public settings: LayoutSettings = DEFAULT_SETTINGS.layout
+        public settings: LayoutSettings = SETTINGS.layout
     ) {
         super();
 
@@ -53,11 +54,11 @@ export default class GraphState extends EventTarget {
         this.collection = (new TwoFrontAlgorithm(collection, this.settings)).computeLayout();
     }
 
-    public emit(type: GraphStateEventType) {
-        this.dispatchEvent(new CustomEvent(type));
+    public emit(type: GraphStateEventType, eventData: CustomEventInit = undefined) {
+        this.dispatchEvent(new CustomEvent(type, eventData));
     }
 
-    public static create(data: GraphStateData, settings: LayoutSettings = DEFAULT_SETTINGS.layout) {
+    public static create(data: GraphStateData, settings: LayoutSettings = SETTINGS.layout) {
 
         const collection: CollectionData = {
             arcs: [],
@@ -81,7 +82,8 @@ export default class GraphState extends EventTarget {
                     const hasInhibitory = canBeInhibitory && Boolean(FI[row][col]);
                     if (cell || hasInhibitory) { // cell is matrix(nodeFrom)[row][col]
                         let arc: Arc;
-                        if (matrix(nodeTo)[col][row]) {
+
+                        if (matrix(nodeTo)[col] && matrix(nodeTo)[col][row]) {
                             arc = new TwoWayArc(
                                 nodeFrom[row],
                                 nodeTo[col],

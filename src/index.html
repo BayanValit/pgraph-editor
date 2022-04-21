@@ -7,22 +7,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" media="screen" href="css/index.css">
   </head>
-<body>
-    <h3 id="name">PGraph net</h3>
-    <div class="container">
-        <div id="controlPanel"></div>
-        <div id="viewport"></div>
-        <div id="debugPanel">
-          <div class="debugMenu">
-            <label>Debugger<span>✅</span></label>
-            <button id="importButton" data-tooltip='Use "ctrl + enter"'>Import & redraw 🔄</button>
-            <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span></button>
-          </div>
-          <textarea id="configEditor"></textarea>
-        </div>
+  <body>
+    <header>
+      <h3 id="name">PGraph net</h3>
+      <label id="debugLabel">Debugger</label>
+    </header>
+    <div id="controlPanel"></div>
+    <div id="viewport"></div>
+    <div id="debugPanel">
+      <div class="debugMenu">
+        <button id="importButton" data-tooltip='Use "ctrl + enter"'>Import & redraw 🔄</button>
+        <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span></button>
+      </div>
+      <textarea id="configEditor"></textarea>
     </div>
-    <footer>
-    </footer>
     <script src="./index.js" type="module"></script>
   </body>
 </html>

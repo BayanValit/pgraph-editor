@@ -1,7 +1,7 @@
 import Point from '../geometry/point';
 import Circle from '../geometry/circle';
 import Arc from './oneWayArc';
-import { DEFAULT_SETTINGS } from '../constants';
+import { SETTINGS } from '../constants';
 import { SimulationNodeDatum } from 'd3-force';
 
 export default class Anchor extends Circle implements SimulationNodeDatum {
@@ -16,9 +16,9 @@ export default class Anchor extends Circle implements SimulationNodeDatum {
 
     constructor(
         public parent: Arc,
-        center: Point,
-        radius = DEFAULT_SETTINGS.object.anchorRadius,
+        center?: Point,
+        radius = SETTINGS.object.anchorRadius,
     ) {
-        super(center, radius)
+        super(radius, center)
     }
 }

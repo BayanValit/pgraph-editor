@@ -7,14 +7,14 @@ export default class Polygon extends Figure {
 
     public length: number;
 
-    constructor(public points?: Point[], center: Point = Polygon.getCenter(points), rotateAngle?: number) {
+    constructor(public points?: Point[], center?: Point, rotateAngle?: number) {
         super(center, rotateAngle);
         this.points = points;
         this.length = points.length;
     }
 
     public static getCenter(points?: Point[]): Point | undefined {
-        if (points === undefined) {
+        if (points === undefined || points.some((point) => point === undefined)) {
             return undefined;
         }
         return points.reduce(

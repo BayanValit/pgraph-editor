@@ -6,8 +6,8 @@ import Vector from "./vector";
 export default class Circle extends Figure {
 
     constructor(
-        center: Point,
-        public radius: number
+        public radius: number,
+        center?: Point
     ) {
         super(center);
     }

@@ -28,6 +28,8 @@ $default-shadow: -1px 2px 3px rgba(0, 0, 0, 0.4);
  * Styles
  */
 svg {
+  width: 100%;
+  height: 100%;
   background-color: $background-color;
   outline: auto;
   cursor: default;
@@ -160,6 +162,5 @@ svg {
     font-weight: 300;
     font-size: .9em;
     fill: darkslategray;
-    transform: translateY(-0.5em);
   }
 }

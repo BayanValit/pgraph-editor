@@ -5,31 +5,57 @@ export default interface Settings {
     animation: AnimationSettings;
 }
 export interface ObjectsSettings {
+    // Position Settings
+    positionRadius: number;
+    initMarks: number;
+    positionLabelOffsetY: number;
+    positionBorderRadius: number;
+
+    // Transition Settings
     transitionWidth: number;
     transitionHeight: number;
-    positionRadius: number;
-    anchorRadius: number;
-    sizeArrow: number;
-    initPositionMarks: number;
-    arcMarginStart: number;
-    arcMarginEnd: number;
+
+    // Arc Settings
+    markerSize: number;
+    marginStart: number;
+    marginEnd: number;
     oneWayArcSymbol: string;
     twoWayArcSymbol: string;
-    oneArcHideAtLength: number;
-    twoArcHideAtLength: number;
-    oneArcLabelPattern: string;
-    twoArcLabelPattern: string;
+    anchorRadius: number;
+    oneWayArcHideAtLength: number;
+    twoWayArcHideAtLength: number;
+    oneWayArcLabelPattern: string;
+    twoWayArcLabelPattern: string;
+    arcLabelOffsetY: number;
 }
 export interface LayoutSettings {
-    viewportWidth: number;
-    viewportHeight: number;
-    paddingLeft: number;
-    paddingTop: number;
+    paddingX: number;
+    paddingY: number;
     intervalX: number; // Optimal: positionRadius * 4
     intervalY: number; // Optimal: positionRadius * 4 + transitionHeight / 2
     pathTension: number;
 }
 
 export interface AnimationSettings {
-    useStart: boolean;
+    zoomStartFrom: number;
+    zoomStartDuration: number;
+}
+
+export function mergeSettings(baseSettings: Settings, settings?: Partial<Settings>) {
+    return {
+        ...baseSettings,
+        ...settings,
+        object: {
+            ...baseSettings.object,
+            ...(settings?.object ?? {})
+        },
+        layout: {
+            ...baseSettings.layout,
+            ...(settings?.layout ?? {})
+        },
+        animation: {
+            ...baseSettings.animation,
+            ...(settings?.animation ?? {})
+        },
+    }
 }

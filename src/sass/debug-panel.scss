@@ -1,16 +1,32 @@
+body.with-debug {
+  #viewport {
+    grid-column-end: auto;
+  }
+  #debugPanel {
+    flex-direction: column;
+    display: flex;
+  }
+  #name {
+    grid-column-end: auto;
+  }
+  #debugLabel {
+    grid-column: 2 / 3;
+    font-weight: 300;
+    font-size: .9em;
+    display: block;
+  }
+}
+
 #debugPanel {
   display: none;
-  flex: auto;
-  flex-direction: column;
-  width: 600px;
-  height: 600px;
 
   .debugMenu {
     font: normal 400 medium "Golos";
+    text-align: end;
 
     button {
       padding: 5px;
-      width: 150px;
+      width: calc(50% - 2px);
       color: white;
       border-radius: 5px;
       font: inherit;
@@ -32,7 +48,7 @@
     label {
       padding: 5px;
       color: black;
-      width: 120px;
+      width: calc(33% - 5px);
       display: inline-flex;
       justify-content: center;
     }
@@ -40,5 +56,6 @@
 
   #configEditor {
     flex: auto;
+    resize: none;
   }
 }
