@@ -43,7 +43,6 @@ export default class GraphRender {
         this.selector = selector;
         this.settings = mergeSettings(SETTINGS, options.settings);
 
-        select(this.selector).selectChildren().remove();
         select("body").classed("with-debug", this.settings.debugMode);
 
         this.viewSize = new Point(
@@ -56,6 +55,7 @@ export default class GraphRender {
 
     public render() {
         debug(this.state);
+        select(this.selector).selectChildren().remove();
 
         this.view = select(this.selector).append("svg").attr("viewBox", `0 0 ${this.viewSize.x} ${this.viewSize.y}`)
         this.container = this.view.append("g").attr("class", "zoom-container");
