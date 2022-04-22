@@ -39,12 +39,14 @@ export interface LayoutSettings {
 }
 
 export interface AnimationSettings {
-    // Start animation
-    useStartZoom: boolean;
-    useStartTranslate: boolean;
+    // Camera animation
+    moveCameraOnRedraw: boolean;
+    lockCamera: boolean;
     zoomStartFrom: number | null;
+
+    // Variables
     translateStartFrom: Point | null;
-    startDuration: number;
+    moveDuration: number;
 
     // Forces
     useForceCenter: boolean;

@@ -34,10 +34,12 @@ export const SETTINGS: Settings = {
         pathTension: 0.5 // ∈ [0, 1]
     },
     animation: {
-        // Start animation
-        useStartZoom: false,
-        useStartTranslate: false,
-        startDuration: 250,
+        // Camera animation
+        moveCameraOnRedraw: true, // Should not be used with lockCamera
+        lockCamera: false, 
+        moveDuration: 250,
+
+        // Variables
         zoomStartFrom: null,
         translateStartFrom: null,
 

@@ -3,7 +3,7 @@ import Node from './objects/abstract/node';
 import Position from './objects/position';
 import Transition from './objects/transition';
 import Arc from './objects/oneWayArc';
-import { Simulation, SimulationNodeDatum, forceSimulation, forceLink, forceCenter, forceManyBody } from 'd3-force';
+import { Simulation, SimulationNodeDatum, forceSimulation, forceCenter, forceManyBody } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { DEBUG_PREFIX, SETTINGS } from './constants';
@@ -168,8 +168,7 @@ export default class GraphRender {
 
         const zoomed = (e: D3ZoomEvent<Element, SimulationNodeDatum>) => {
             this.container.attr('transform', 'translate(' + e.transform.x + ',' + e.transform.y + ') scale(' + e.transform.k + ')');
-            console.log('emit', new Point(e.transform.x, e.transform.y), e.transform.k)
-
+            console.log(e.transform.x, e.transform.y, e.transform.k);
             this.state.emit(GraphStateEventType.Zoomed, { 
                 detail: { 
                     zoomRatio: e.transform.k,
@@ -186,52 +185,67 @@ export default class GraphRender {
             .wheelDelta((e) => -e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002))
             .on('zoom', zoomed);
 
-        this.zoomOnStart(nodesData, zoomFunc);
-        this.view.call(zoomFunc).on("wheel", event => event.preventDefault());
+        this.view.call(zoomFunc).on("wheel", e => {
+            e.ctrlKey ? e.preventDefault() : null;
+        });
+        this.cameraFitContent(nodesData, zoomFunc);
     }
 
-    protected zoomOnStart(nodesData: Node[], zoomFunc) {
+    // TODO: Move to utils
+    protected cameraFitContent(nodesData: Node[], zoomFunc) {
 
-        const animation   = this.settings.animation;
-        const centers     = nodesData.map(node => (node.center));
-        const topLeft     = centers.reduce((prev, current) => new Point(Math.min(prev.x, current.x), Math.min(prev.y, current.y)), centers[0]);
-        const bottomRight = centers.reduce((prev, current) => new Point(Math.max(prev.x, current.x), Math.max(prev.y, current.y)), centers[0]);
+        const animation   = this.settings.animation,
+              objCenters  = nodesData.map(node => (node.center)),
+              topLeft     = objCenters.reduce((prev, current) => new Point(Math.min(prev.x, current.x), Math.min(prev.y, current.y)), objCenters[0]),
+              bottomRight = objCenters.reduce((prev, current) => new Point(Math.max(prev.x, current.x), Math.max(prev.y, current.y)), objCenters[0]),
 
-        const viewBoxSize = new Point(this.viewSize.x, this.viewSize.y);
-        const containerSize = bottomRight.add(topLeft.getInverse());
-        const [paddingX, paddingY] = [this.settings.layout.paddingX, this.settings.layout.paddingY];
-        
-        const [wRatio, hRatio] = [(viewBoxSize.x - paddingX * 2) / containerSize.x, (viewBoxSize.y - paddingY * 2) / containerSize.y];
+              viewBoxSize   = new Point(this.viewSize.x, this.viewSize.y),
+              containerSize = bottomRight.add(topLeft.getInverse()),
 
-        const zoomRatio = Math.min(wRatio, hRatio, zoomFunc.scaleExtent()[1]);
-        const newContainerSize = containerSize.multiple(zoomRatio);
-        const computePadding = new Point((viewBoxSize.x - newContainerSize.x) / 2, (viewBoxSize.y - newContainerSize.y) / 2);
+              [paddingX, paddingY] = [this.settings.layout.paddingX, this.settings.layout.paddingY],
+              [wRatio, hRatio]     = [(viewBoxSize.x - paddingX * 2) / containerSize.x, (viewBoxSize.y - paddingY * 2) / containerSize.y],
 
-        console.log({
-            viewBoxSize: [viewBoxSize.x, viewBoxSize.y],
-            containerSize: [containerSize.x, containerSize.y],
-            newContainerSize: [containerSize.x * zoomRatio, containerSize.y * zoomRatio],
-            padding: [paddingX, paddingY],
-            zoomRatio: zoomRatio,
-            computePadding: computePadding,
-            translateStartFrom: animation.translateStartFrom,
-            transform_view: this.view.attr("transform"),
-            transform_container: this.container.attr("transform"),
-        })
+              zoomRatio           = Math.min(wRatio, hRatio, zoomFunc.scaleExtent()[1]),
+              scaledContainerSize = containerSize.multiple(zoomRatio),
+              computedPadding     = new Point((viewBoxSize.x - scaledContainerSize.x) / 2, (viewBoxSize.y - scaledContainerSize.y) / 2),
 
-        const initTransform = zoomIdentity.translate(computePadding.x, computePadding.y).scale(zoomRatio);
-        const zoomParam = animation.useStartZoom && animation.zoomStartFrom >= 0 ? animation.zoomStartFrom : zoomRatio;
-        const translateParam = animation.useStartTranslate && animation.translateStartFrom?.get() ? animation.translateStartFrom : computePadding;
+              zoomFrom        = animation.zoomStartFrom >= 0 ? animation.zoomStartFrom : zoomRatio,
+              translateFrom   = animation.translateStartFrom?.get() ? animation.translateStartFrom : undefined,
 
-        // TODO
+              targetTransform = zoomIdentity.translate(computedPadding.x, computedPadding.y).scale(zoomRatio).translate(0, 0);
+              
+        // Camera pre-positioning
+        // TODO: not DRY ↓
+        if (animation.lockCamera) {
+            zoomFunc.scaleTo(this.view, zoomFrom);
+            translateFrom ? zoomFunc.translateTo(this.view,
+                (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
+                (viewBoxSize.y / 2 - translateFrom.y) / zoomFrom
+            ) : zoomFunc.translateTo(this.view,
+                containerSize.x / 2,
+                containerSize.y / 2
+            ); 
+        } else if (animation.moveCameraOnRedraw) {
+            zoomFunc.scaleTo(this.view, zoomFrom);
+            translateFrom ? zoomFunc.translateTo(this.view,
+                (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
+                (viewBoxSize.y / 2 - translateFrom.y) / zoomFrom
+            ) : zoomFunc.translateTo(this.view,
+                containerSize.x / 2,
+                containerSize.y / 2
+            );
 
-        zoomFunc.scaleTo(this.view, zoomParam);
-        zoomFunc.translateTo(this.view, containerSize.x / 2, containerSize.y / 2);
-
-        if (animation.useStartZoom || animation.useStartTranslate) {
-            this.view.transition().duration(animation.startDuration).call(
+            // Move camera to center (with animation)
+            this.view.transition().duration(animation.moveDuration).call(
                 zoomFunc.transform,
-                initTransform
+                targetTransform
+            );
+        } else {
+            // Move to center (without animation)
+            zoomFunc.scaleTo(this.view, zoomRatio);
+            zoomFunc.translateTo(this.view,
+                containerSize.x / 2,
+                containerSize.y / 2
             );
         }
     }
