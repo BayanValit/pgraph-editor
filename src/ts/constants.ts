@@ -27,15 +27,24 @@ export const SETTINGS: Settings = {
         arcLabelOffsetY: -7,
     },
     layout: {
-        paddingX: 160,
-        paddingY: 160,
+        paddingX: 80,
+        paddingY: 80,
         intervalX: 160,
         intervalY: 180,
         pathTension: 0.5 // ∈ [0, 1]
     },
     animation: {
-        zoomStartFrom: 0,
-        zoomStartDuration: 250,
+        // Start animation
+        useStartZoom: false,
+        useStartTranslate: false,
+        startDuration: 250,
+        zoomStartFrom: null,
+        translateStartFrom: null,
+
+        // Forces
+        useForceCenter: false,
+        useForceCharge: true,
+        forceChargeMaxDistance: 100,
     }
 }
 

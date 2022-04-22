@@ -10,7 +10,7 @@ export default class Point {
     }
 
     public get(): Point {
-        return this;
+        return this.x === undefined || this.y === undefined ? undefined : this;
     }
 
     public getInverse(): Point {

@@ -1,3 +1,5 @@
+import Point from "./geometry/point";
+
 export default interface Settings {
     debugMode: boolean;
     object: ObjectsSettings;
@@ -37,8 +39,17 @@ export interface LayoutSettings {
 }
 
 export interface AnimationSettings {
-    zoomStartFrom: number;
-    zoomStartDuration: number;
+    // Start animation
+    useStartZoom: boolean;
+    useStartTranslate: boolean;
+    zoomStartFrom: number | null;
+    translateStartFrom: Point | null;
+    startDuration: number;
+
+    // Forces
+    useForceCenter: boolean;
+    useForceCharge: boolean;
+    forceChargeMaxDistance: number;
 }
 
 export function mergeSettings(baseSettings: Settings, settings?: Partial<Settings>) {

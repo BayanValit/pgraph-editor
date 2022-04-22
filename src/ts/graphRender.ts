@@ -15,7 +15,7 @@ import formatMarkCount from './utils/formatText';
 import Settings from './settings';
 import TwoWayArc from './objects/twoWayArc';
 import Point from './geometry/point';
-import { zoom, D3ZoomEvent } from 'd3-zoom';
+import { zoom, zoomIdentity, D3ZoomEvent } from 'd3-zoom';
 import { formatArcLabelText } from './utils';
 
 
@@ -168,38 +168,81 @@ export default class GraphRender {
 
         const zoomed = (e: D3ZoomEvent<Element, SimulationNodeDatum>) => {
             this.container.attr('transform', 'translate(' + e.transform.x + ',' + e.transform.y + ') scale(' + e.transform.k + ')');
-            this.state.emit(GraphStateEventType.Zoomed, { detail: { zoomRatio: e.transform.k }} );
+            console.log('emit', new Point(e.transform.x, e.transform.y), e.transform.k)
+
+            this.state.emit(GraphStateEventType.Zoomed, { 
+                detail: { 
+                    zoomRatio: e.transform.k,
+                    translateStartFrom: new Point(e.transform.x, e.transform.y),
+                }
+            });
         }
 
-        const zoomFunc = zoom().scaleExtent([0, 5]).filter((e) => (e.type === 'wheel' || e.button === 1)).on('zoom', zoomed);
+        // Current Behavior:
+        // LMB = panning and move
+        // Ctrl + whell = zoom
+        const zoomFunc = zoom().scaleExtent([0, 1])
+            .filter((e) => ((e.ctrlKey && e.type === 'wheel') || e.button === 0 && e.type === 'mousedown'))
+            .wheelDelta((e) => -e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002))
+            .on('zoom', zoomed);
+
         this.zoomOnStart(nodesData, zoomFunc);
-        this.view.call(zoomFunc);
+        this.view.call(zoomFunc).on("wheel", event => event.preventDefault());
     }
 
     protected zoomOnStart(nodesData: Node[], zoomFunc) {
-        if (this.settings.animation.zoomStartFrom > 0) {
-            zoomFunc.scaleTo(this.view, this.settings.animation.zoomStartFrom);
-        }
-        const centers = nodesData.map(node => (node.center));
 
+        const animation   = this.settings.animation;
+        const centers     = nodesData.map(node => (node.center));
         const topLeft     = centers.reduce((prev, current) => new Point(Math.min(prev.x, current.x), Math.min(prev.y, current.y)), centers[0]);
         const bottomRight = centers.reduce((prev, current) => new Point(Math.max(prev.x, current.x), Math.max(prev.y, current.y)), centers[0]);
 
-        const workSpace = bottomRight.add(topLeft.getInverse());
+        const viewBoxSize = new Point(this.viewSize.x, this.viewSize.y);
+        const containerSize = bottomRight.add(topLeft.getInverse());
         const [paddingX, paddingY] = [this.settings.layout.paddingX, this.settings.layout.paddingY];
-        const [wRatio, hRatio] = [this.viewSize.x / (workSpace.x + paddingX), this.viewSize.y / (workSpace.y + paddingY)];
         
-        zoomFunc.scaleTo(this.view.transition().duration(this.settings.animation.zoomStartDuration), Math.min(wRatio, hRatio));
+        const [wRatio, hRatio] = [(viewBoxSize.x - paddingX * 2) / containerSize.x, (viewBoxSize.y - paddingY * 2) / containerSize.y];
+
+        const zoomRatio = Math.min(wRatio, hRatio, zoomFunc.scaleExtent()[1]);
+        const newContainerSize = containerSize.multiple(zoomRatio);
+        const computePadding = new Point((viewBoxSize.x - newContainerSize.x) / 2, (viewBoxSize.y - newContainerSize.y) / 2);
+
+        console.log({
+            viewBoxSize: [viewBoxSize.x, viewBoxSize.y],
+            containerSize: [containerSize.x, containerSize.y],
+            newContainerSize: [containerSize.x * zoomRatio, containerSize.y * zoomRatio],
+            padding: [paddingX, paddingY],
+            zoomRatio: zoomRatio,
+            computePadding: computePadding,
+            translateStartFrom: animation.translateStartFrom,
+            transform_view: this.view.attr("transform"),
+            transform_container: this.container.attr("transform"),
+        })
+
+        const initTransform = zoomIdentity.translate(computePadding.x, computePadding.y).scale(zoomRatio);
+        const zoomParam = animation.useStartZoom && animation.zoomStartFrom >= 0 ? animation.zoomStartFrom : zoomRatio;
+        const translateParam = animation.useStartTranslate && animation.translateStartFrom?.get() ? animation.translateStartFrom : computePadding;
+
+        // TODO
+
+        zoomFunc.scaleTo(this.view, zoomParam);
+        zoomFunc.translateTo(this.view, containerSize.x / 2, containerSize.y / 2);
+
+        if (animation.useStartZoom || animation.useStartTranslate) {
+            this.view.transition().duration(animation.startDuration).call(
+                zoomFunc.transform,
+                initTransform
+            );
+        }
     }
 
     protected doPhysics() {
-        // TODO: Rectangle collisions
-        // this.simulation.force("collide", complexCollide(
-        //     this.settings.object.positionRadius, [this.settings.object.transitionWidth, this.settings.object.transitionHeight])
-        // );
-        this.simulation.force("center", forceCenter(this.viewSize.x / 2, this.viewSize.y / 2));
-        this.simulation.force("link", forceLink(this.state.collection.arcs).strength(0));
-        this.simulation.force("charge", forceManyBody().distanceMax(100).strength(-1000));
+        if (this.settings.animation.useForceCenter) {
+            this.simulation.force("center", forceCenter(this.viewSize.x / 2, this.viewSize.y / 2));
+        }
+        if (this.settings.animation.useForceCharge) {
+            this.simulation.force("charge", forceManyBody().distanceMax(this.settings.animation.forceChargeMaxDistance).strength(-1000));
+        }
     }
 
     protected dragStartedNode(event: { active: number; }, d: Node): void {
