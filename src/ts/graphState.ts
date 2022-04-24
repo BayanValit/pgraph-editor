@@ -18,9 +18,9 @@ export type GraphStateData = {
     type: ConfigType;
     markup: number[];
     matrices: {
-        FP: Matrix;
-        FT: Matrix;
-        FI?: Matrix;
+        FP: number[][];
+        FT: number[][];
+        FI?: number[][];
     },
     positions  : Array<PositionData>;
     transitions: Array<TransitionData>;
@@ -36,6 +36,7 @@ export type CollectionData = {
 export enum GraphStateEventType {
     Changed = 'changed',
     Zoomed  = 'zoomed',
+    MarkupChanged  = 'markup-changed',
 }
 
 export default class GraphState extends EventTarget {
@@ -74,7 +75,7 @@ export default class GraphState extends EventTarget {
         );
 
         const getArcsFromMatrix = (nodeFrom: Node[], nodeTo: Node[]) => {
-            const canBeInhibitory = nodeFrom[0] instanceof Position && data.type == ConfigType.Inhibitory;
+            const canBeInhibitory = nodeFrom[0] instanceof Position && data.type == ConfigType.Inhibitor;
             const matrix = (collection: Node[]) => (collection[0] instanceof Position ? FP : FT);
 
             matrix(nodeFrom).forEach((array, row: number) => {
@@ -87,8 +88,8 @@ export default class GraphState extends EventTarget {
                             arc = new TwoWayArc(
                                 nodeFrom[row],
                                 nodeTo[col],
-                                cell,
                                 matrix(nodeTo)[col][row],
+                                cell,
                                 hasInhibitory,
                             );
                             matrix(nodeTo)[col][row] = 0;
@@ -118,6 +119,13 @@ export default class GraphState extends EventTarget {
         return new GraphState(collection, data.type, settings);
     }
 
+    public updateMarkup(markup: number[]): void {
+        this.collection.positions.forEach((position: Position, index) => {
+            position.marks = markup[index] ?? 0;
+        });
+        this.emit(GraphStateEventType.MarkupChanged);
+    }
+
     public getData(): GraphStateData {
 
         const { positions, transitions, arcs } = { ...this.collection };
@@ -136,9 +144,9 @@ export default class GraphState extends EventTarget {
             transitions: [],
             arcs: []
         };
-
         positions.forEach((position, row) => {
             position.target.forEach(arc => {
+
                 const col = transitions.indexOf(arc.target as Transition);
 
                 if (col >= 0 && arc instanceof OneWayArc) {
@@ -146,8 +154,9 @@ export default class GraphState extends EventTarget {
                     FI[row][col] = Number(arc.hasInhibitory);
                 }
                 if (col >= 0 && arc instanceof TwoWayArc) {
-                    FP[row][col] = arc.sourceWeight;
-                    FT[row][col] = arc.targetWeight;
+
+                    FP[row][col] = arc.targetWeight;
+                    FT[col][row] = arc.sourceWeight;
                     FI[row][col] = Number(arc.hasInhibitory);
                 }
             });
@@ -167,7 +176,7 @@ export default class GraphState extends EventTarget {
 
         arcs.forEach((arc: Arc) => data.arcs.push({ binding: arc.getSerial(), anchors: arc.anchors }));
 
-        data.matrices = { FP, FT, FI: this.type == ConfigType.Inhibitory ? FI : null };
+        data.matrices = { FP, FT, FI: this.type == ConfigType.Inhibitor ? FI : null };
 
         return data;
     }

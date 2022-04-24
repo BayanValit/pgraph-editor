@@ -1,2 +1,2 @@
-export { parseFromJson, serializeToJson } from './jsonGraphState';
+export { parseFromJsonObject, parseFromJsonText, serializeToJson } from './jsonGraphState';
 export { default as formatMarkCount, formatArcLabelText } from './formatText';

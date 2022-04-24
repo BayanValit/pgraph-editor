@@ -13,12 +13,13 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
 
     public marginStart = SETTINGS.object.marginStart;
     public marginEnd = SETTINGS.object.marginEnd;
-    public hidden = false;
-    public startReversed = false;
-    public endReversed = false;
+    public startSegmentReversed = false;
+    public endSegmentReversed = false;
     public isReverse = false;
+    public labelInverted = false;
+    public labelPattern: string[];
+    public labelText: string;
     public linkSymbol: string;
-    public labelPattern: string;
     public hideAtLength: number;
 
     constructor(
@@ -32,19 +33,27 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
 
     public updateMargins(): void {
         this.calcMarginsToFigures();
-        this.shouldHide();
     }
 
-    public getSerial(): string {
-        return this.source.nodeType + this.source.displayIndex + this.linkSymbol + this.target.nodeType + this.target.displayIndex;
+    public getSerial(serialReverse = false): string {
+        const [first, last] = serialReverse ? [this.target, this.source] : [this.source, this.target];
+        return first.nodeType + first.displayIndex + this.linkSymbol + last.nodeType + last.displayIndex;
     }
     
     public getFullPath(): string {
         return Path.toSvgPath([this.source.center, ...this.anchors, this.target.center]);
     }
+
+    public invertLabel(): boolean  {
+        if (this.getVector().dx < 0 != this.labelInverted) {
+            this.labelInverted = !this.labelInverted;
+            return true;
+        }
+        return false;
+    }
     
-    protected shouldHide(): void {
-        this.hidden = this.getVector().getLength() * (this.isReverse ? -1 : 1) < this.hideAtLength;
+    public shouldHide(): boolean {
+        return this.getVector().getLength() * (this.isReverse ? -1 : 1) < this.hideAtLength;
     }
 
     /**
@@ -61,7 +70,7 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         const [first, second, penultimate, last] = [0, 1, anchorsAll.length - 2, anchorsAll.length - 1];
 
         const vectorFrom = Vector.fromPoints(anchorsAll[first], anchorsAll[second]);
-        const vectorTo = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
+        const vectorTo   = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
 
         const scoutFunction = (margin: number, object: Node, vector: Vector, inverse = false) => {
             if (object instanceof Circle) {
@@ -73,20 +82,20 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         };       
 
         anchorsAll[first] = scoutFunction(this.marginStart, this.source, vectorFrom);
-        anchorsAll[last] = scoutFunction(this.marginEnd, this.target, vectorTo, true);
+        anchorsAll[last]  = scoutFunction(this.marginEnd, this.target, vectorTo, true);
 
         const newVectorFrom = Vector.fromPoints(anchorsAll[first], anchorsAll[second]);
-        const newVectorTo = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
+        const newVectorTo   = Vector.fromPoints(anchorsAll[penultimate], anchorsAll[last]);
 
-        this.startReversed = vectorFrom.isReverse(newVectorFrom);
-        this.endReversed = vectorTo.isReverse(newVectorTo);
+        this.startSegmentReversed = vectorFrom.isReverse(newVectorFrom);
+        this.endSegmentReversed   = vectorTo.isReverse(newVectorTo);
         
         const startToTarget = Vector.fromPoints(anchorsAll[first], this.target.center).getLength();
-        const endToTarget = Vector.fromPoints(anchorsAll[last], this.target.center).getLength();
+        const endToTarget   = Vector.fromPoints(anchorsAll[last], this.target.center).getLength();
         this.isReverse = startToTarget < endToTarget;
 
-        this.start = this.startReversed ? anchorsAll[second] : anchorsAll[first];
-        this.end = this.endReversed ? anchorsAll[penultimate] : anchorsAll[last];
+        this.start = this.startSegmentReversed ? anchorsAll[second] : anchorsAll[first];
+        this.end = this.endSegmentReversed ? anchorsAll[penultimate] : anchorsAll[last];
     }
 
     private marginCircleScout(
@@ -95,9 +104,7 @@ export default abstract class Arc extends Path implements SimulationLinkDatum<Si
         vector: Vector,
         inverse = false
     ): Point {
-
-        vector =  inverse ? vector.getInverse() : vector;
-
+        vector = inverse ? vector.getInverse() : vector;
         const circeRatio = (object.radius + margin) / vector.getLength();
         return new Point(vector.dx * circeRatio + object.x, vector.dy * circeRatio + object.y);
     }

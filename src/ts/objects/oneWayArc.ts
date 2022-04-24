@@ -7,9 +7,8 @@ export default class OneWayArc extends Arc {
 
     public weight: number;
     public readonly linkSymbol = SETTINGS.object.oneWayArcSymbol;
-    public readonly labelPattern = SETTINGS.object.oneWayArcLabelPattern;
     public readonly hideAtLength = SETTINGS.object.oneWayArcHideAtLength;
-
+    public readonly labelPattern = SETTINGS.object.oneWayArcLabelPattern;
 
     constructor(
         source: Node,

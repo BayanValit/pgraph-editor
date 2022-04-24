@@ -32,15 +32,17 @@ export function formatArcLabelText(arc: Arc) {
     if (arc instanceof OneWayArc && !(arc.weight > 1)) {
         return;
     }
-    const text = arc.labelPattern.replace(/%i([^\s%]+)(\S*)/g, (_match, inhibitoryMark, replacement) => {
+    const pattern = arc.labelInverted ? arc.labelPattern.slice().reverse().join('') : arc.labelPattern.join('');
+    const text = pattern.replace(/%i([^\s%]+)(\S*)/g, (_match, inhibitoryMark, replacement) => {
         return arc instanceof TwoWayArc && arc.hasInhibitory ? inhibitoryMark : replacement;
     });
 
-    return text.replace(/%([w|ws|wt]+)/g, (_match, weightType) => {
+    arc.labelText = text.replace(/%([w|ws|wt]+)/g, (_match, weightType) => {
         switch (weightType) {
             case 'w' : return arc instanceof OneWayArc ? arc.weight.toString(): '';
             case 'ws': return arc instanceof TwoWayArc ? arc.sourceWeight.toString() : '';
             case 'wt': return arc instanceof TwoWayArc ? arc.targetWeight.toString() : '';
         }
     });
+    return arc.labelText;
 }

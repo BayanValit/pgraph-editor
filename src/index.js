@@ -1,23 +1,22 @@
 /* global fetch document File URL window console */
 
-import Point from '../lib/geometry/point';
+import { GraphStateEventType } from '../lib/graphState';
 import { GraphState, GraphRender } from '../lib/index';
-import { parseFromJson, serializeToJson } from '../lib/utils/jsonGraphState';
+import { parseFromJsonText, serializeToJson } from '../lib/utils/jsonGraphState';
 
 const graph = {
     state: undefined,
     renderer: undefined,
 };
 
-let zoomRatio;
-let translateStartFrom;
+let zoomCamera, translateCamera;
 
 function fetchGraphState() {
     return fetch("./examples/data.example.jsonc")
         .then((res) => res.text())
         .then((serialized) => {
             document.querySelector('#configEditor').innerHTML = serialized;
-            return parseFromJson(serialized)
+            return parseFromJsonText(serialized)
         })
         .then((graphStateData) => GraphState.create(graphStateData))
 }
@@ -28,16 +27,16 @@ function update(state) {
         state, 
         settings: {
             animation: { 
-                zoomStartFrom: zoomRatio,
-                translateStartFrom: translateStartFrom,
+                zoomCamera: zoomCamera,
+                translateCamera: translateCamera,
             } 
         }
     });
-    graph.renderer.render();
-    graph.state.addEventListener('changed', () => console.log(graph.state));
-    graph.state.addEventListener('zoomed', (e) => {
-        zoomRatio = e.detail.zoomRatio;
-        translateStartFrom = e.detail.translateStartFrom;
+
+    graph.state.addEventListener(GraphStateEventType.Changed, () => console.log(graph.state));
+    graph.state.addEventListener(GraphStateEventType.Zoomed, (e) => {
+        zoomCamera = e.detail.zoomCamera;
+        translateCamera = e.detail.translateCamera;
     });
 }
 
@@ -69,7 +68,7 @@ function initKeyboardEvents() {
 
 function importAndRedraw() {
     const configJson = document.querySelector("#configEditor").value;
-    update(GraphState.create(parseFromJson(configJson)));
+    update(GraphState.create(parseFromJsonText(configJson)));
 }
 
 function exportConfig() {

@@ -22,37 +22,37 @@ export const SETTINGS: Settings = {
         anchorRadius: 10,
         oneWayArcHideAtLength: 0,
         twoWayArcHideAtLength: 12,
-        oneWayArcLabelPattern: '%w',
-        twoWayArcLabelPattern: '%ws | %ii%wt',
+        oneWayArcLabelPattern: ['%w'],
+        twoWayArcLabelPattern: ['%ws', ' | ', '%ii%wt'],
         arcLabelOffsetY: -7,
     },
     layout: {
         paddingX: 80,
         paddingY: 80,
         intervalX: 160,
-        intervalY: 180,
+        intervalY: 240,
         pathTension: 0.5 // ∈ [0, 1]
     },
     animation: {
         // Camera animation
         moveCameraOnRedraw: true, // Should not be used with lockCamera
-        lockCamera: false, 
+        lockCamera: false,
         moveDuration: 250,
 
         // Variables
-        zoomStartFrom: null,
-        translateStartFrom: null,
+        zoomCamera: null,
+        translateCamera: null,
 
         // Forces
         useForceCenter: false,
-        useForceCharge: true,
+        useForceCharge: false,
         forceChargeMaxDistance: 100,
     }
 }
 
 export enum ConfigType {
-    Default = 'default',
-    Inhibitory = 'inhibitory'
+    Regular = 'regular',
+    Inhibitor = 'inhibitor'
 }
 
 export const DEBUG_PREFIX = 'pgraph-editor';

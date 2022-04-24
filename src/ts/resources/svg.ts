@@ -10,7 +10,7 @@ export const DEFS = {
             <path d="M-5,-5 L5,0 L-5,5"></path>
         </marker>`,
     marker_inhibitory:
-        `<marker id="marker-inhibitory" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="${markerSize}"
+        `<marker id="marker-inhibitor" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="${markerSize}"
              markerHeight="${markerSize}" orient="auto-start-reverse">
             <ellipse rx="4" ry="4"/>
         </marker>`,

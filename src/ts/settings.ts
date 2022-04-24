@@ -26,8 +26,8 @@ export interface ObjectsSettings {
     anchorRadius: number;
     oneWayArcHideAtLength: number;
     twoWayArcHideAtLength: number;
-    oneWayArcLabelPattern: string;
-    twoWayArcLabelPattern: string;
+    oneWayArcLabelPattern: string[];
+    twoWayArcLabelPattern: string[];
     arcLabelOffsetY: number;
 }
 export interface LayoutSettings {
@@ -42,11 +42,11 @@ export interface AnimationSettings {
     // Camera animation
     moveCameraOnRedraw: boolean;
     lockCamera: boolean;
-    zoomStartFrom: number | null;
-
+    moveDuration: number | null;
+    
     // Variables
-    translateStartFrom: Point | null;
-    moveDuration: number;
+    zoomCamera: number | null;
+    translateCamera: { x: number, y: number } | null;
 
     // Forces
     useForceCenter: boolean;

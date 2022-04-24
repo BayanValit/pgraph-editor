@@ -6,8 +6,8 @@ import { SETTINGS } from '../constants';
 export default class TwoWayArc extends Arc {
 
     public readonly linkSymbol = SETTINGS.object.twoWayArcSymbol;
-    public readonly labelPattern = SETTINGS.object.twoWayArcLabelPattern;
     public readonly hideAtLength = SETTINGS.object.twoWayArcHideAtLength;
+    public readonly labelPattern = SETTINGS.object.twoWayArcLabelPattern;
 
     constructor(
         source: Node,

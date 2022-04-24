@@ -27,7 +27,7 @@ export default class Path extends Line {
         return [this.start, ...this.anchors, this.end];
     }
 
-    public getPath(): string {
-        return Path.toSvgPath(this.getPoints());
+    public getPath(getReserse = false): string {
+        return Path.toSvgPath(getReserse ? this.getPoints().reverse() : this.getPoints());
     }
 }

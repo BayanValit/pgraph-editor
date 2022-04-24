@@ -1,8 +1,7 @@
-import ObjectInterface from './objects/abstract/objectInterface';
 import Node from './objects/abstract/node';
 import Position from './objects/position';
 import Transition from './objects/transition';
-import Arc from './objects/oneWayArc';
+import Arc from './objects/abstract/arc';
 import { Simulation, SimulationNodeDatum, forceSimulation, forceCenter, forceManyBody } from 'd3-force';
 import { Selection, select, BaseType } from 'd3-selection';
 import { drag } from 'd3-drag';
@@ -24,7 +23,6 @@ const debug = createDebugger(DEBUG_PREFIX);
 interface GraphRenderOptions {
     state: GraphState;
     settings?: Partial<Settings>;
-    zoomStartFrom?: number;
 }
 
 // TODO! REFACTOR ME
@@ -34,14 +32,21 @@ export default class GraphRender {
     private view: Selection<SVGSVGElement, unknown, HTMLElement, never>;
     private container: Selection<SVGGElement, unknown, HTMLElement, never>;
     private state: GraphState;
+    private objects: {
+        positions: Selection<BaseType, Position, SVGElement, never>,
+        transitions: Selection<BaseType, Transition, SVGElement, never>,
+        arcs: Selection<BaseType, Arc, SVGElement, never>
+    };
 
     protected selector: string;
     protected settings: Settings;
-    protected viewSize: Point;
+    protected viewSize:    Point;
+    protected contentSize: Point;
 
     constructor(selector: string, options: GraphRenderOptions) {
         this.selector = selector;
         this.settings = mergeSettings(SETTINGS, options.settings);
+        this.state = options.state;
 
         select("body").classed("with-debug", this.settings.debugMode);
 
@@ -49,40 +54,44 @@ export default class GraphRender {
             Number.parseFloat(select(this.selector).style("width")),
             Number.parseFloat(select(this.selector).style("height"))
         );
-        this.simulation = forceSimulation().velocityDecay(0.25);
-        this.state = options.state;
-    }
 
-    public render() {
         debug(this.state);
+
         select(this.selector).selectChildren().remove();
 
-        this.view = select(this.selector).append("svg").attr("viewBox", `0 0 ${this.viewSize.x} ${this.viewSize.y}`)
+        this.simulation = forceSimulation().velocityDecay(0.25);
+        this.view = select(this.selector).append("svg").attr("viewBox", `0 0 ${this.viewSize.x} ${this.viewSize.y}`);
         this.container = this.view.append("g").attr("class", "zoom-container");
 
-        // Render
+        this.addEventListeners();
+        // TODO: Create function with dynamic render support
         this.loadSvgResourses();
-        this.doAnimate(this.createObjects());
+        this.createObjects();
+        this.doAnimate();
         this.doPhysics();
     }
 
-    protected createObjects(): Array<Selection<BaseType, ObjectInterface, SVGElement, never>> {
+    private addEventListeners() {
+        this.state.addEventListener(GraphStateEventType.MarkupChanged, () => this.updateMarkup());
+    }
+
+    protected createObjects(): void {
 
         const arcs = this.container.selectAll(".arc")
             .data(this.state.collection.arcs)
             .join((enter) => {
                 const link = enter.append("g").attr("class", "link");
-                link.append("path").attr("class", "arc-background");
+                link.append("path").attr("class", "arc-background").attr("id", (obj: Arc) => obj.getSerial(true));
                 link.append("path")
                     .attr("class", "arc")
                     .attr("id", (obj: Arc) => obj.getSerial())
                     .attr("marker-start", (obj: Arc) => obj instanceof TwoWayArc ? "url(#marker-standart)" : null)
-                    .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitory)" : "url(#marker-standart)");
+                    .attr("marker-end", (obj: Arc) => obj.hasInhibitory ? "url(#marker-inhibitor)" : "url(#marker-standart)");
                 link.append("text").attr("class", "arc-label")
-                    .attr("rotate", (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0)
+                    // .call((obj) => obj.datum().invertLabel())
                     .attr("dy", this.settings.object.arcLabelOffsetY)
                     .append("textPath")
-                    .attr("href", (obj: Arc) => `#${obj.getSerial()}`)
+                    .attr("href", (obj: Arc) => obj.labelInverted ? `#${obj.getSerial(true)}` : `#${obj.getSerial()}`)
                     .attr("startOffset", "50%")
                     .text((obj: Arc) => formatArcLabelText(obj));
                 return link;
@@ -134,7 +143,16 @@ export default class GraphRender {
                 .on("drag", this.draggedNode.bind(this))
                 .on("end", this.dragEndedNode.bind(this)));
         
-        return [positions, transitions, arcs];
+        this.objects = { positions, transitions, arcs };
+    }
+
+    protected updateMarkup(): void {
+        const positions = this.objects.positions;
+
+        positions.selectChild(".position").attr("marks", (obj: Position) => obj.marks);
+        positions.selectChild(".custom-marks")
+            .attr("symbols", (obj: Position) => formatMarkCount(obj.marks).length)
+            .text((obj: Position) => formatMarkCount(obj.marks));
     }
 
     protected loadSvgResourses(): void {
@@ -145,34 +163,40 @@ export default class GraphRender {
         }
     }
 
-    protected doAnimate(objects: Selection<BaseType, ObjectInterface, SVGElement, never>[]): void {
+    protected doAnimate(): void {
 
         const nodesData = [...this.state.collection.positions, ...this.state.collection.transitions];
-        const [positions, transitions, arcs] = objects;
+        const { positions, transitions, arcs } = this.objects;
 
         this.simulation.nodes(nodesData).on("tick", () => {
             arcs.each((arc: Arc) => {
                 arc.updateMargins();
             });
-            arcs.classed("hide-start", (d: Arc) => d.startReversed)
-                .classed("hide-end", (d: Arc) => d.endReversed)
-                .classed("hidden", (d: Arc) => d.hidden)
-                .selectAll(".arc, .arc-background")
+            arcs.classed("hide-start", (d: Arc) => d.startSegmentReversed)
+                .classed("hide-end", (d: Arc) => d.endSegmentReversed)
+                .classed("hidden", (d: Arc) => d.shouldHide())
+                .selectAll(".arc")
                 .attr("d", (obj: Arc) => obj.getPath());
-            arcs.selectAll(".arc-label")
-                .attr("rotate", (obj: Arc) => obj.getVector().dx < 0 ? 180 : 0);
+            arcs.selectAll(".arc-background")
+                .attr("d", (obj: Arc) => obj.getPath(true));
+            arcs.selectAll(".arc-label textPath")
+                .text((obj: Arc) => obj.invertLabel() ? formatArcLabelText(obj) : obj.labelText)
+                .attr("href", (obj: Arc) => obj.labelInverted ? `#${obj.getSerial(true)}` : `#${obj.getSerial()}`);
 
-            positions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
-            transitions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
+            positions.attr("transform", (obj: Position) => `translate(${obj.x},${obj.y})`);
+            transitions.attr("transform", (obj: Transition) => `translate(${obj.x},${obj.y})`);
         });
 
         const zoomed = (e: D3ZoomEvent<Element, SimulationNodeDatum>) => {
+            if (isNaN(e.transform.x) || isNaN(e.transform.y)) {
+                return;
+            }
             this.container.attr('transform', 'translate(' + e.transform.x + ',' + e.transform.y + ') scale(' + e.transform.k + ')');
-            console.log(e.transform.x, e.transform.y, e.transform.k);
+
             this.state.emit(GraphStateEventType.Zoomed, { 
                 detail: { 
-                    zoomRatio: e.transform.k,
-                    translateStartFrom: new Point(e.transform.x, e.transform.y),
+                    zoomCamera: e.transform.k,
+                    translateCamera: { x: e.transform.x, y: e.transform.y },
                 }
             });
         }
@@ -187,33 +211,39 @@ export default class GraphRender {
 
         this.view.call(zoomFunc).on("wheel", e => {
             e.ctrlKey ? e.preventDefault() : null;
-        });
-        this.cameraFitContent(nodesData, zoomFunc);
+        }, { passive: false });
+        this.cameraFitContent(zoomFunc, nodesData);
     }
 
     // TODO: Move to utils
-    protected cameraFitContent(nodesData: Node[], zoomFunc) {
+    protected cameraFitContent(zoomFunc, nodesData) {
 
-        const animation   = this.settings.animation,
+        this.viewSize = new Point(
+            Number.parseFloat(select(this.selector).style("width")),
+            Number.parseFloat(select(this.selector).style("height"))
+        );
+        
+        const animation     = this.settings.animation,
+              viewBoxSize   = this.viewSize,
+
               objCenters  = nodesData.map(node => (node.center)),
               topLeft     = objCenters.reduce((prev, current) => new Point(Math.min(prev.x, current.x), Math.min(prev.y, current.y)), objCenters[0]),
               bottomRight = objCenters.reduce((prev, current) => new Point(Math.max(prev.x, current.x), Math.max(prev.y, current.y)), objCenters[0]),
-
-              viewBoxSize   = new Point(this.viewSize.x, this.viewSize.y),
-              containerSize = bottomRight.add(topLeft.getInverse()),
+              contentSize = bottomRight.add(topLeft.getInverse()),
 
               [paddingX, paddingY] = [this.settings.layout.paddingX, this.settings.layout.paddingY],
-              [wRatio, hRatio]     = [(viewBoxSize.x - paddingX * 2) / containerSize.x, (viewBoxSize.y - paddingY * 2) / containerSize.y],
+              [wRatio, hRatio]     = [(viewBoxSize.x - paddingX * 2) / contentSize.x, (viewBoxSize.y - paddingY * 2) / contentSize.y],
 
               zoomRatio           = Math.min(wRatio, hRatio, zoomFunc.scaleExtent()[1]),
-              scaledContainerSize = containerSize.multiple(zoomRatio),
-              computedPadding     = new Point((viewBoxSize.x - scaledContainerSize.x) / 2, (viewBoxSize.y - scaledContainerSize.y) / 2),
+              scaledContentSize   = contentSize.multiple(zoomRatio),
+              computedPadding     = new Point((viewBoxSize.x - scaledContentSize.x) / 2, (viewBoxSize.y - scaledContentSize.y) / 2),
 
-              zoomFrom        = animation.zoomStartFrom >= 0 ? animation.zoomStartFrom : zoomRatio,
-              translateFrom   = animation.translateStartFrom?.get() ? animation.translateStartFrom : undefined,
+              zoomFrom        = animation.zoomCamera >= 0 ? animation.zoomCamera : zoomRatio,
+              translateFrom   = animation.translateCamera ? animation.translateCamera : null,
 
-              targetTransform = zoomIdentity.translate(computedPadding.x, computedPadding.y).scale(zoomRatio).translate(0, 0);
-              
+              targetTransform = zoomIdentity.translate(computedPadding.x, computedPadding.y).scale(zoomRatio).translate(-topLeft.x, -topLeft.y);
+        
+
         // Camera pre-positioning
         // TODO: not DRY ↓
         if (animation.lockCamera) {
@@ -222,8 +252,8 @@ export default class GraphRender {
                 (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
                 (viewBoxSize.y / 2 - translateFrom.y) / zoomFrom
             ) : zoomFunc.translateTo(this.view,
-                containerSize.x / 2,
-                containerSize.y / 2
+                contentSize.x / 2 + topLeft.x,
+                contentSize.y / 2 + topLeft.y
             ); 
         } else if (animation.moveCameraOnRedraw) {
             zoomFunc.scaleTo(this.view, zoomFrom);
@@ -231,12 +261,12 @@ export default class GraphRender {
                 (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
                 (viewBoxSize.y / 2 - translateFrom.y) / zoomFrom
             ) : zoomFunc.translateTo(this.view,
-                containerSize.x / 2,
-                containerSize.y / 2
+                contentSize.x / 2 + topLeft.x,
+                contentSize.y / 2 + topLeft.y
             );
 
             // Move camera to center (with animation)
-            this.view.transition().duration(animation.moveDuration).call(
+            this.view.transition().duration(animation.moveDuration ?? 0).call(
                 zoomFunc.transform,
                 targetTransform
             );
@@ -244,15 +274,15 @@ export default class GraphRender {
             // Move to center (without animation)
             zoomFunc.scaleTo(this.view, zoomRatio);
             zoomFunc.translateTo(this.view,
-                containerSize.x / 2,
-                containerSize.y / 2
+                contentSize.x / 2 + topLeft.x,
+                contentSize.y / 2 + topLeft.y,
             );
         }
     }
 
     protected doPhysics() {
         if (this.settings.animation.useForceCenter) {
-            this.simulation.force("center", forceCenter(this.viewSize.x / 2, this.viewSize.y / 2));
+            this.simulation.force("center", forceCenter(this.contentSize.x / 2, this.contentSize.y / 2));
         }
         if (this.settings.animation.useForceCharge) {
             this.simulation.force("charge", forceManyBody().distanceMax(this.settings.animation.forceChargeMaxDistance).strength(-1000));
