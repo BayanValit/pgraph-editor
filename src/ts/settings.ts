@@ -1,5 +1,3 @@
-import Point from "./geometry/point";
-
 export default interface Settings {
     debugMode: boolean;
     object: ObjectsSettings;
@@ -29,13 +27,13 @@ export interface ObjectsSettings {
     oneWayArcLabelPattern: string[];
     twoWayArcLabelPattern: string[];
     arcLabelOffsetY: number;
+    arcTension: number;
 }
 export interface LayoutSettings {
     paddingX: number;
     paddingY: number;
-    intervalX: number; // Optimal: positionRadius * 4
-    intervalY: number; // Optimal: positionRadius * 4 + transitionHeight / 2
-    pathTension: number;
+    baseIntervalX: number; // Optimal: positionRadius * 4
+    baseIntervalY: number; // Optimal: positionRadius * 4 + transitionWidth
 }
 
 export interface AnimationSettings {

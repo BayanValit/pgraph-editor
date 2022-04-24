@@ -1,5 +1,12 @@
 import Settings from './settings';
 
+export const DEBUG_PREFIX = 'pgraph-editor';
+
+export enum ConfigType {
+    Regular = 'regular',
+    Inhibitor = 'inhibitor'
+}
+
 export const SETTINGS: Settings = {
     debugMode: true,
     object: {
@@ -25,13 +32,13 @@ export const SETTINGS: Settings = {
         oneWayArcLabelPattern: ['%w'],
         twoWayArcLabelPattern: ['%ws', ' | ', '%ii%wt'],
         arcLabelOffsetY: -7,
+        arcTension: 0.5, // ∈ [0, 1]
     },
     layout: {
         paddingX: 80,
         paddingY: 80,
-        intervalX: 160,
-        intervalY: 240,
-        pathTension: 0.5 // ∈ [0, 1]
+        baseIntervalX: 160, // Optimal: positionRadius * 4
+        baseIntervalY: 280, // Optimal: positionRadius * 4 + transitionWidth
     },
     animation: {
         // Camera animation
@@ -49,10 +56,3 @@ export const SETTINGS: Settings = {
         forceChargeMaxDistance: 100,
     }
 }
-
-export enum ConfigType {
-    Regular = 'regular',
-    Inhibitor = 'inhibitor'
-}
-
-export const DEBUG_PREFIX = 'pgraph-editor';

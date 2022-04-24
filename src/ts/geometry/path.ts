@@ -8,7 +8,7 @@ export default class Path extends Line {
     public anchors: Array<Point>;
 
     // NOTE: Choose your favourite curve type
-    public static pathFunc = line().curve(curveCardinal.tension(SETTINGS.layout.pathTension));
+    public static pathFunc = line().curve(curveCardinal.tension(SETTINGS.object.arcTension));
 
     constructor(
         start: Point,

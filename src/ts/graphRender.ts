@@ -172,10 +172,10 @@ export default class GraphRender {
             arcs.each((arc: Arc) => {
                 arc.updateMargins();
             });
-            arcs.classed("hide-start", (d: Arc) => d.startSegmentReversed)
-                .classed("hide-end", (d: Arc) => d.endSegmentReversed)
-                .classed("hidden", (d: Arc) => d.shouldHide())
+            arcs.classed("hidden", (d: Arc) => d.shouldHide())
                 .selectAll(".arc")
+                .classed("hide-start", (d: Arc) => d.startSegmentReversed)
+                .classed("hide-end", (d: Arc) => d.endSegmentReversed)
                 .attr("d", (obj: Arc) => obj.getPath());
             arcs.selectAll(".arc-background")
                 .attr("d", (obj: Arc) => obj.getPath(true));
@@ -245,17 +245,7 @@ export default class GraphRender {
         
 
         // Camera pre-positioning
-        // TODO: not DRY ↓
-        if (animation.lockCamera) {
-            zoomFunc.scaleTo(this.view, zoomFrom);
-            translateFrom ? zoomFunc.translateTo(this.view,
-                (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
-                (viewBoxSize.y / 2 - translateFrom.y) / zoomFrom
-            ) : zoomFunc.translateTo(this.view,
-                contentSize.x / 2 + topLeft.x,
-                contentSize.y / 2 + topLeft.y
-            ); 
-        } else if (animation.moveCameraOnRedraw) {
+        if (animation.lockCamera || animation.moveCameraOnRedraw) {
             zoomFunc.scaleTo(this.view, zoomFrom);
             translateFrom ? zoomFunc.translateTo(this.view,
                 (viewBoxSize.x / 2 - translateFrom.x) / zoomFrom,
@@ -264,13 +254,14 @@ export default class GraphRender {
                 contentSize.x / 2 + topLeft.x,
                 contentSize.y / 2 + topLeft.y
             );
-
+        }
+        if (animation.moveCameraOnRedraw) {
             // Move camera to center (with animation)
             this.view.transition().duration(animation.moveDuration ?? 0).call(
                 zoomFunc.transform,
                 targetTransform
             );
-        } else {
+        } else if (!animation.lockCamera) {
             // Move to center (without animation)
             zoomFunc.scaleTo(this.view, zoomRatio);
             zoomFunc.translateTo(this.view,

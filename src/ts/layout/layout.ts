@@ -1,7 +1,7 @@
 import { CollectionData } from "../graphState";
 import { LayoutSettings } from "../settings";
 
-export default interface LayoutAlgorithm {
+export default interface Layout {
 
     collection: CollectionData;
     settings: LayoutSettings;
