@@ -18,10 +18,10 @@ function formatReplacer(match: string): string {
 }
 
 export function parseFromJsonText(serialized: string): GraphStateData {
-    return parseFromJsonObject(JSON.parse(serialized));
+    return fromRawData(JSON.parse(serialized));
 }
 
-export function parseFromJsonObject(json): GraphStateData {
+export function fromRawData(json): GraphStateData {
     const data = autofix(json);
     assertIsValid(data);
     const {

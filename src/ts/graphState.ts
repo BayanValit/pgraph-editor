@@ -10,8 +10,8 @@ import OneWayArc from './objects/oneWayArc';
 import TwoWayArc from './objects/twoWayArc';
 import Point from './geometry/point';
 
-type PositionData   = { center: Point };
-type TransitionData = { center: Point, rotate: number };
+type PositionData   = { center: { x: number, y: number } };
+type TransitionData = { center: { x: number, y: number }, rotate: number };
 type ArcData        = { binding: string, anchors: Array<{ x: number, y: number }> };
 
 export type GraphStateData = {

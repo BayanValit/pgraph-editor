@@ -7,7 +7,7 @@ export default class Circle extends Figure {
 
     constructor(
         public radius: number,
-        center?: Point
+        center?: Point | { x: number, y: number }
     ) {
         super(center);
     }

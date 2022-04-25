@@ -7,7 +7,7 @@ export default class Polygon extends Figure {
 
     public length: number;
 
-    constructor(public points?: Point[], center?: Point, rotateAngle?: number) {
+    constructor(public points?: Point[], center?: Point | { x: number, y: number }, rotateAngle?: number) {
         super(center, rotateAngle);
         this.points = points;
         this.length = points.length;

@@ -22,7 +22,7 @@ export default class Position extends Circle implements Node {
 
     constructor(
         public displayIndex: number,
-        center: Point = undefined,
+        center: Point | { x: number, y: number } = undefined,
         marks: number = SETTINGS.object.initMarks,
         radius = SETTINGS.object.positionRadius,
     ) {

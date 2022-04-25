@@ -14,6 +14,8 @@ type IntervalOffset = {
 
 export default class TwoFrontAlgorithm extends LayoutAlgorithm implements Layout {
 
+    public readonly canExpand = false;
+
     constructor(
         collection: CollectionData,
         settings: LayoutSettings,
@@ -59,7 +61,7 @@ export default class TwoFrontAlgorithm extends LayoutAlgorithm implements Layout
     }
 
     protected scaleIntervalY(y: number) {
-        return ((y - 1) ** 2) / 1000 + 1;
+        return ((y - 1) ** 2) / 400 + 1;
     }
 
     protected getIntervalOffset(delta: number, minorCount: number, majorCount: number): IntervalOffset {

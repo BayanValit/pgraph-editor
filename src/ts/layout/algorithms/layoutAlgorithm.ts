@@ -4,7 +4,7 @@ import Layout from "../layout";
 
 export default abstract class LayoutAlgorithm implements Layout {
 
-    public readonly canExpanded;
+    public readonly canExpand;
 
     constructor(
         public collection: CollectionData,

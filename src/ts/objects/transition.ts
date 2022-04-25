@@ -21,7 +21,7 @@ export default class Transition extends Rectangle implements Node {
 
     constructor(
         public displayIndex: number,
-        center: Point = undefined,
+        center: Point | { x: number, y: number } = undefined,
         rotateAngle = 0,
     ) {
         super(SETTINGS.object.transitionWidth, SETTINGS.object.transitionHeight, center, rotateAngle);
