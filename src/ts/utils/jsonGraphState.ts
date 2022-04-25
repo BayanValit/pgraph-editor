@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { ConfigType, DEFAULT_SETTINGS } from "../constants";
+import { ConfigType } from "../constants";
 import NumberList from "../math/numberList";
 import Matrix from "../math/matrix";
 import { GraphStateData } from "../graphState";
@@ -17,8 +17,12 @@ function formatReplacer(match: string): string {
     return match.replace(/\s+/gs, "").replaceAll(",", ", ");
 }
 
-export function parseFromJson(serialized: string): GraphStateData {
-    const data = autofix(JSON.parse(serialized));
+export function parseFromJsonText(serialized: string): GraphStateData {
+    return fromRawData(JSON.parse(serialized));
+}
+
+export function fromRawData(json): GraphStateData {
+    const data = autofix(json);
     assertIsValid(data);
     const {
         type,
@@ -39,8 +43,8 @@ export function parseFromJson(serialized: string): GraphStateData {
 }
 
 function autofix(data: any) {
-    data.type ??= ConfigType.Default;
-    if (data.type == ConfigType.Inhibitory) {
+    data.type ??= ConfigType.Regular;
+    if (data.type == ConfigType.Inhibitor) {
         data.matrices.FI ??= Array.from(data.matrices.FP as Array<number[]>, x => x.fill(0));
     }
 
@@ -71,7 +75,7 @@ function assertMatricesValid(data: any): void | never {
         FT: new Matrix(data.matrices.FT),
     };
 
-    if (data.type === ConfigType.Inhibitory) {
+    if (data.type === ConfigType.Inhibitor) {
         matrices['FI'] = new Matrix(data.matrices.FI);
     }
 
@@ -94,7 +98,7 @@ function assertMatricesValid(data: any): void | never {
         throw new TypeError("FP and FT matrices dismatch");
     }
 
-    if (data.type === ConfigType.Inhibitory && !matrices.FP.сompareRowsWithRows(matrices['FI'])) {
+    if (data.type === ConfigType.Inhibitor && !matrices.FP.сompareRowsWithRows(matrices['FI'])) {
         throw new TypeError("FI and FP matrices dismatch");
     }
 }

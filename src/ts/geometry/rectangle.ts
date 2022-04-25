@@ -9,7 +9,7 @@ export default class Rectangle extends Polygon {
     constructor(
         public width: number,
         public height: number,
-        center?: Point,
+        center?: Point | { x: number, y: number },
         rotateAngle?: number
     ) {
         super(

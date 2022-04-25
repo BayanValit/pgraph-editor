@@ -1,85 +1,86 @@
-import LayoutAlgorithm from "../LayoutAlgorithm";
 import { LayoutSettings } from "../../settings";
-import { NodeType } from "../../objects/abstract/node";
 import { CollectionData } from "../../graphState";
+import Node from "../../objects/abstract/node";
 import Point from "../../geometry/point";
+import Layout from "../layout";
+import LayoutAlgorithm from "./layoutAlgorithm";
+import Position from "../../objects/position";
+import Transition from "../../objects/transition";
 
-export default class TwoFrontAlgorithm implements LayoutAlgorithm {
+type IntervalOffset = { 
+    offset: number,
+    interval: number,
+};
+
+export default class TwoFrontAlgorithm extends LayoutAlgorithm implements Layout {
+
+    public readonly canExpand = false;
 
     constructor(
-        public collection: CollectionData,
-        public settings: LayoutSettings,
-    ) {}
-
-    public computeLayout(): CollectionData {
-        const collection = this.collection;
-
-        const n = Math.max(collection.positions.length, collection.transitions.length);
-
-        for (let index = 0; index < n; index += 1) {
-            if (collection.positions[index] && collection.positions[index].center === undefined) {
-                collection.positions[index].setCenter(this.getOptimalPosition(NodeType.Position, index));
-            }
-            if (collection.transitions[index] && collection.transitions[index].center === undefined) {
-                collection.transitions[index].setCenter(this.getOptimalPosition(NodeType.Transition, index));
-            }
-        }
-        return collection;
+        collection: CollectionData,
+        settings: LayoutSettings,
+    ) {
+        super(collection, settings);
     }
 
-    protected getOptimalPosition(
-        nodeType: NodeType,
-        objectNumber: number
-    ): Point {
-        if (nodeType == NodeType.Position || nodeType == NodeType.Transition) {
-    
-            // Indentation for the first position...
-            const pX0 = this.settings.paddingLeft;
-            const pY0 = this.settings.paddingTop;
-    
-            // ...and for the first transition
-            const tX0 = pX0;
-            const tY0 = pY0 + this.settings.intervalY;
-    
-            // Intervals between objects
-            let deltaX = this.settings.intervalX;
-            let deltaY = this.settings.intervalY;
-    
-            deltaY *= objectNumber % 2 ? 1 : -1; // Symmetrically relative to the transition center
-    
-            // Extreme points: The maximum right or top values are among all previous objects
-            let extPX = 0, extTX = 0, extPY = 0, extTY = 0;
-    
-            if (objectNumber) {
-                extPX = 0;
-                extTX = Math.max(...this.collection.transitions.slice(0, objectNumber).map(t => t.center?.x ?? 0));
-                extPY = Math.min(...this.collection.positions.slice(0, objectNumber).map(p => p.center?.y ?? Infinity));
-                extTY = Math.min(...this.collection.transitions.slice(0, objectNumber).map(t => t.center?.y ?? Infinity));
-            } else {
-                deltaX = 0;  // If first
-            }
-            switch (nodeType) {
-                case NodeType.Position: {
-                    // Critical points: The value of the alternative object of the current index;
-                    const critX = this.collection.transitions[objectNumber]?.center?.x ?? 0;
-                    const critY = this.collection.transitions[objectNumber]?.center?.y ?? 0;
-    
-                    const X = Math.max(extPX + deltaX, pX0 + deltaX, extTX + deltaX, critX);
-                    const Y = Math.max(extPY - pY0 + tY0 + deltaY, Math.max(extTY, tY0) + deltaY, objectNumber % 2 ? critY + deltaY : 0, pY0);
-    
-                    return new Point(X, Y);
-                }
-                case NodeType.Transition: {
-                    const critX = this.collection.positions[objectNumber]?.center?.x ?? 0;
-                    const critY = this.collection.positions[objectNumber]?.center?.y ?? 0;
-    
-                    const X = Math.max(extTX + deltaX, tX0 + deltaX, extPX + deltaX, critX);
-                    const Y = Math.max(extTY - tY0 + pY0 + Math.abs(deltaY), objectNumber % 2 ? 0 : critY - deltaY, tY0);
-    
-                    return new Point(X, Y);
-                }
-            }
+    public applyLayout(): void {
+
+        const transitionsCount = this.collection.transitions.length,
+              positionsCount   = this.collection.positions.length,
+              positionsTopCount    = Math.ceil(positionsCount / 2),
+              positionsBottomCount = Math.floor(positionsCount / 2);
+
+        const layoutBasisType = positionsTopCount > transitionsCount ? Position : Transition,
+              layoutColumns   = Math.max(transitionsCount, positionsTopCount);
+
+        const deltaX = this.settings.baseIntervalX;
+        const deltaY = layoutColumns > 6 ? this.scaleIntervalY(layoutColumns) * this.settings.baseIntervalY : this.settings.baseIntervalY;
+
+        const [transitions, positionsTop, positionsBottom] = [
+            this.collection.transitions,
+            this.collection.positions.slice(0, positionsTopCount),
+            this.collection.positions.slice(positionsTopCount)
+        ];
+
+        let transitionIntervalX: IntervalOffset,
+            positionTopIntervalX: IntervalOffset,
+            positionBottomIntervalX: IntervalOffset;
+
+        if (layoutBasisType == Transition) {
+            transitionIntervalX = { offset: 0, interval: deltaX };
+            positionTopIntervalX = this.getIntervalOffset(deltaX, positionsTopCount, transitionsCount);
+            positionBottomIntervalX = this.getIntervalOffset(deltaX, positionsBottomCount, transitionsCount);
+        } else {
+            positionTopIntervalX = { offset: 0, interval: deltaX };
+            positionBottomIntervalX = this.getIntervalOffset(deltaX, positionsBottomCount, positionsTopCount);
+            transitionIntervalX = this.getIntervalOffset(deltaX, transitionsCount, positionsTopCount);
         }
-        throw new Error(`Invalid type object: ${nodeType}`);
+        this.setCenters(positionsTop, positionTopIntervalX, deltaX, 0);
+        this.setCenters(positionsBottom, positionBottomIntervalX, deltaX, deltaY * 2);
+        this.setCenters(transitions, transitionIntervalX, deltaX, deltaY);
+    }
+
+    protected scaleIntervalY(y: number) {
+        return ((y - 1) ** 2) / 400 + 1;
+    }
+
+    protected getIntervalOffset(delta: number, minorCount: number, majorCount: number): IntervalOffset {
+        if (minorCount <= 1) {
+            return { offset: 0, interval: (majorCount - 1) / 2 * delta };
+        }
+        const offset = Math.floor((majorCount - 1) / (minorCount + 1));
+        const interval = (majorCount - offset * 2 - 1) / (minorCount - 1) * delta;
+        return { offset, interval };
+    }
+
+    protected setCenters(collection: Node[], offsetX: IntervalOffset, deltaX: number, deltaY: number) {
+
+        const basisPoint = new Point(0, 0);
+
+        collection.forEach((node, index) => {
+            node.setCenter(
+                new Point(offsetX.offset * deltaX + offsetX.interval * (collection.length > 1 ? index : 1), deltaY).add(basisPoint)
+            );
+        });
     }
 }

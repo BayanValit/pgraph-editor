@@ -1,10 +1,17 @@
+import { SETTINGS } from '../constants';
+
+const markerSize = SETTINGS.object.markerSize;
+
 export const DEFS = {
+    
     marker_standart:
-        `<marker id="marker-standart" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        `<marker id="marker-standart" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="${markerSize}"
+            markerHeight="${markerSize}" orient="auto-start-reverse">
             <path d="M-5,-5 L5,0 L-5,5"></path>
         </marker>`,
     marker_inhibitory:
-        `<marker id="marker-inhibitory" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        `<marker id="marker-inhibitor" viewBox="-5 -5 10 10" refX="0" refY="0" markerWidth="${markerSize}"
+             markerHeight="${markerSize}" orient="auto-start-reverse">
             <ellipse rx="4" ry="4"/>
         </marker>`,
     mark_0:

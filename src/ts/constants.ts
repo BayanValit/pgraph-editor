@@ -1,40 +1,58 @@
 import Settings from './settings';
 
-export const DEFAULT_SETTINGS: Settings = {
-    debugMode: true,
-    object: {
-        transitionWidth: 120,
-        transitionHeight: 40,
-        positionRadius:   40,
-        anchorRadius:     10,
-        arcMarginStart:   15,
-        arcMarginEnd:     15,
-        sizeArrow:         7,
-        initPositionMarks: 0,
-        oneWayArcSymbol: '➝',
-        twoWayArcSymbol: '⮂',
-        oneArcHideAtLength: 0,
-        twoArcHideAtLength: 12,
-        oneArcLabelPattern: '%w',
-        twoArcLabelPattern: '%wt | %ii%ws',
-    },
-    layout: {
-        viewportWidth: 1200,
-        viewportHeight: 600,
-        paddingLeft: 100,
-        paddingTop: 100,
-        intervalX: 160,
-        intervalY: 180,
-        pathTension: 0.5 // ∈ [0, 1]
-    },
-    animation: {
-        useStart: true
-    }
-}
+export const DEBUG_PREFIX = 'pgraph-editor';
 
 export enum ConfigType {
-    Default = 'default',
-    Inhibitory = 'inhibitory'
+    Regular = 'regular',
+    Inhibitor = 'inhibitor'
 }
 
-export const DEBUG_PREFIX = 'pgraph-editor';
+export const SETTINGS: Settings = {
+    debugMode: true,
+    object: {
+        // Position Settings
+        positionRadius: 40,
+        initMarks: 0,
+        positionLabelOffsetY: -45,
+        positionBorderRadius: 2,
+
+        // Transition Settings
+        transitionWidth: 120,
+        transitionHeight: 40,
+
+        // Arc Settings
+        markerSize: 7,
+        marginStart: 15,
+        marginEnd: 15,
+        oneWayArcSymbol: '➝',
+        twoWayArcSymbol: '⮂',
+        anchorRadius: 10,
+        oneWayArcHideAtLength: 0,
+        twoWayArcHideAtLength: 12,
+        oneWayArcLabelPattern: ['%w'],
+        twoWayArcLabelPattern: ['%ws', ' | ', '%ii%wt'],
+        arcLabelOffsetY: -7,
+        arcTension: 0.5, // ∈ [0, 1]
+    },
+    layout: {
+        paddingX: 80,
+        paddingY: 80,
+        baseIntervalX: 160, // Optimal: positionRadius * 4
+        baseIntervalY: 280, // Optimal: positionRadius * 4 + transitionWidth
+    },
+    animation: {
+        // Camera animation
+        moveCameraOnRedraw: true, // Should not be used with lockCamera
+        lockCamera: false,
+        moveDuration: 250,
+
+        // Variables
+        zoomCamera: null,
+        translateCamera: null,
+
+        // Forces
+        useForceCenter: false,
+        useForceCharge: false,
+        forceChargeMaxDistance: 100,
+    }
+}

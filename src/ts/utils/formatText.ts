@@ -29,15 +29,20 @@ export default function formatMarkCount(marks: number): string {
  * %i{text}%w - replaces weight inhibitory mark if two-arc has inhibitory type
  */
 export function formatArcLabelText(arc: Arc) {
-    const text = arc.labelPattern.replace(/%i([^\s%]+)(\S*)/g, (_match, inhibitoryMark, replacement) => {
+    if (arc instanceof OneWayArc && !(arc.weight > 1)) {
+        return;
+    }
+    const pattern = arc.labelInverted ? arc.labelPattern.slice().reverse().join('') : arc.labelPattern.join('');
+    const text = pattern.replace(/%i([^\s%]+)(\S*)/g, (_match, inhibitoryMark, replacement) => {
         return arc instanceof TwoWayArc && arc.hasInhibitory ? inhibitoryMark : replacement;
     });
 
-    return text.replace(/%([w|ws|wt]+)/g, (_match, weightType) => {
+    arc.labelText = text.replace(/%([w|ws|wt]+)/g, (_match, weightType) => {
         switch (weightType) {
             case 'w' : return arc instanceof OneWayArc ? arc.weight.toString(): '';
             case 'ws': return arc instanceof TwoWayArc ? arc.sourceWeight.toString() : '';
             case 'wt': return arc instanceof TwoWayArc ? arc.targetWeight.toString() : '';
         }
     });
+    return arc.labelText;
 }

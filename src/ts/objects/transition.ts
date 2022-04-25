@@ -2,7 +2,7 @@ import Point from '../geometry/point';
 import Node, { NodeType } from './abstract/node';
 import Arc from './abstract/arc';
 import Rectangle from '../geometry/rectangle';
-import { DEFAULT_SETTINGS } from '../constants';
+import { SETTINGS } from '../constants';
 
 export default class Transition extends Rectangle implements Node {
 
@@ -21,10 +21,10 @@ export default class Transition extends Rectangle implements Node {
 
     constructor(
         public displayIndex: number,
-        center: Point = new Point(0, 0),
+        center: Point | { x: number, y: number } = undefined,
         rotateAngle = 0,
     ) {
-        super(DEFAULT_SETTINGS.object.transitionWidth, DEFAULT_SETTINGS.object.transitionHeight, center, rotateAngle);
+        super(SETTINGS.object.transitionWidth, SETTINGS.object.transitionHeight, center, rotateAngle);
     }
 
     public setCenter(center: Point) {

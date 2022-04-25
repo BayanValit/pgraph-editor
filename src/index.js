@@ -1,28 +1,43 @@
 /* global fetch document File URL window console */
 
+import { GraphStateEventType } from '../lib/graphState';
 import { GraphState, GraphRender } from '../lib/index';
-import { parseFromJson, serializeToJson }from '../lib/utils/jsonGraphState';
+import { parseFromJsonText, serializeToJson } from '../lib/utils/jsonGraphState';
 
 const graph = {
     state: undefined,
     renderer: undefined,
 };
 
+let zoomCamera, translateCamera;
+
 function fetchGraphState() {
     return fetch("./examples/data.example.jsonc")
         .then((res) => res.text())
         .then((serialized) => {
             document.querySelector('#configEditor').innerHTML = serialized;
-            return parseFromJson(serialized)
+            return parseFromJsonText(serialized)
         })
         .then((graphStateData) => GraphState.create(graphStateData))
 }
 
 function update(state) {
     graph.state = state;
-    graph.renderer = new GraphRender('#viewport', { state })
-    graph.renderer.render();
-    graph.state.addEventListener('changed', () => console.log(graph.state));
+    graph.renderer = new GraphRender('#viewport', { 
+        state, 
+        settings: {
+            animation: { 
+                zoomCamera: zoomCamera,
+                translateCamera: translateCamera,
+            } 
+        }
+    });
+
+    graph.state.addEventListener(GraphStateEventType.Changed, () => console.log(graph.state));
+    graph.state.addEventListener(GraphStateEventType.Zoomed, (e) => {
+        zoomCamera = e.detail.zoomCamera;
+        translateCamera = e.detail.translateCamera;
+    });
 }
 
 function initMouseEvents() {
@@ -43,13 +58,17 @@ function initKeyboardEvents() {
             return;
         }
     });
+    document.querySelector("#configEditor").addEventListener("keydown", e => {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            e.target.setRangeText('  ', e.target.selectionStart, e.target.selectionEnd, 'end');
+        }
+    });
 }
 
 function importAndRedraw() {
     const configJson = document.querySelector("#configEditor").value;
-    // TODO: Describe the logic of error output in a separate class
-    document.querySelector('.debugMenu span').innerHTML = '❌';
-    update(GraphState.create(parseFromJson(configJson)));
+    update(GraphState.create(parseFromJsonText(configJson)));
 }
 
 function exportConfig() {
@@ -69,8 +88,6 @@ function exportConfig() {
 }
 
 window.onload = function () {
-    document.getElementById("debugPanel").style.display = "flex";
-
     fetchGraphState().then((state) => {
         update(state);
     });

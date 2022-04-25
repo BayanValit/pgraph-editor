@@ -2,7 +2,7 @@ import Point from '../geometry/point';
 import Node, { NodeType } from './abstract/node';
 import Circle from '../geometry/circle';
 import Arc from './abstract/arc';
-import { DEFAULT_SETTINGS } from '../constants';
+import { SETTINGS } from '../constants';
 
 export default class Position extends Circle implements Node {
 
@@ -22,10 +22,11 @@ export default class Position extends Circle implements Node {
 
     constructor(
         public displayIndex: number,
-        center: Point = new Point(0, 0),
-        marks: number = DEFAULT_SETTINGS.object.initPositionMarks,
+        center: Point | { x: number, y: number } = undefined,
+        marks: number = SETTINGS.object.initMarks,
+        radius = SETTINGS.object.positionRadius,
     ) {
-        super(center, DEFAULT_SETTINGS.object.positionRadius)
+        super(radius, center)
 
         this.marks = marks;
     }
