@@ -42,8 +42,8 @@ export const SETTINGS: Settings = {
     },
     animation: {
         // Camera animation
-        moveCameraOnRedraw: true, // Should not be used with lockCamera
-        lockCamera: false,
+        moveCameraOnRedraw: false, // Should not be used with lockCamera
+        lockCamera: true,
         moveDuration: 250,
 
         // Variables

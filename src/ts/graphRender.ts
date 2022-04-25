@@ -254,14 +254,14 @@ export default class GraphRender {
                 contentSize.x / 2 + topLeft.x,
                 contentSize.y / 2 + topLeft.y
             );
-        }
-        if (animation.moveCameraOnRedraw) {
-            // Move camera to center (with animation)
-            this.view.transition().duration(animation.moveDuration ?? 0).call(
-                zoomFunc.transform,
-                targetTransform
-            );
-        } else if (!animation.lockCamera) {
+            if (!animation.lockCamera) {
+                // Move camera to center (with animation)
+                this.view.transition().duration(animation.moveDuration ?? 0).call(
+                    zoomFunc.transform,
+                    targetTransform
+                );
+            }
+        } else {
             // Move to center (without animation)
             zoomFunc.scaleTo(this.view, zoomRatio);
             zoomFunc.translateTo(this.view,
