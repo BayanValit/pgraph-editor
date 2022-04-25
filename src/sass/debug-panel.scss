@@ -1,0 +1,61 @@
+body.with-debug {
+  #viewport {
+    grid-column-end: auto;
+  }
+  #debugPanel {
+    flex-direction: column;
+    display: flex;
+  }
+  #name {
+    grid-column-end: auto;
+  }
+  #debugLabel {
+    grid-column: 2 / 3;
+    font-weight: 300;
+    font-size: .9em;
+    display: block;
+  }
+}
+
+#debugPanel {
+  display: none;
+
+  .debugMenu {
+    font: normal 400 medium "Golos";
+    text-align: end;
+
+    button {
+      padding: 5px;
+      width: calc(50% - 2px);
+      color: white;
+      border-radius: 5px;
+      font: inherit;
+      font-size: 0.8em;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      &#importButton {
+        background-color: darkorange;
+      }
+
+      &#exportButton {
+        background-color: green;
+      }
+    }
+
+    label {
+      padding: 5px;
+      color: black;
+      width: calc(33% - 5px);
+      display: inline-flex;
+      justify-content: center;
+    }
+  }
+
+  #configEditor {
+    flex: auto;
+    resize: none;
+  }
+}

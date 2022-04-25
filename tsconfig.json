@@ -2,10 +2,19 @@
     "compilerOptions": {
         "lib": ["DOM", "ES2021"],
         "target": "ES2017",
+        "esModuleInterop": true,
+        "strict": false, // need to make strict = true
+        "declaration": true,
         "removeComments": true,
         "sourceMap": true,
-        "allowUmdGlobalAccess": true,
+        "isolatedModules": true,
+        "forceConsistentCasingInFileNames": true,
         "moduleResolution": "node",
+        "outDir": "lib/",
         "module": "ES6"
-    }
+    },
+    "include": ["src/ts/**/*.ts"],
+    "exclude": [
+       "node_modules"
+    ]
 }

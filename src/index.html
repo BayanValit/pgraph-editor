@@ -1,29 +1,26 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv='X-UA-Compatible' content='IE=edge'>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>PGraph editor</title>
-    <meta name='viewport' content='width=device-width, initial-scale=1'>
-    <link rel='stylesheet' type='text/css' media='screen' href='css/main.css'>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/index.css">
   </head>
-<body>
-    <h3 id="name"></h3>
-    <div class="container">
-        <div id="controlPanel"></div>
-        <div id="viewport"></div>
-        <div id="debugPanel">
-          <div>
-            <label>Debug config:</label>
-            <button id="importButton" data-tooltip='Use "ctrl + enter"'>Import & redraw 🔄</button>
-            <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span><a></a></button>
-          </div>
-          <textarea id="configEditor"></textarea>
-        </div>
+  <body>
+    <header>
+      <h3 id="name">PGraph net</h3>
+      <label id="debugLabel">Debugger</label>
+    </header>
+    <div id="controlPanel"></div>
+    <div id="viewport"></div>
+    <div id="debugPanel">
+      <div class="debugMenu">
+        <button id="importButton" data-tooltip='Use "ctrl + enter"'>Import & redraw 🔄</button>
+        <button id="exportButton" data-tooltip='Use "ctrl + e"'>Export & update <span class="symbol-export">⮭</span></button>
+      </div>
+      <textarea id="configEditor"></textarea>
     </div>
-    <footer>
-      <script type="module" src='js/index.js'></script>
-      <script type="module" src='../node_modules/d3/dist/d3.min.js'></script>
-    </footer>
+    <script src="./index.js" type="module"></script>
   </body>
 </html>
